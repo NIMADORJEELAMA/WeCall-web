@@ -33,13 +33,13 @@
 //     </html>
 //   );
 // }
-
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import { Toaster } from "react-hot-toast";
-import Script from "next/script"; // ✅ add this
+import Script from "next/script";
+import { SocketProvider } from "@/components/providers/SocketProvider";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -48,8 +48,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Hill Top Resort",
-  description: "Advanced Restaurant & Logistics Management",
+  title: "WeCall",
+  description: "Advanced Reply & Earn",
 };
 
 export default function RootLayout({
@@ -60,7 +60,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.variable} font-sans antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <SocketProvider>{children}</SocketProvider>
+        </Providers>
 
         <Toaster
           position="top-right"
@@ -68,7 +70,7 @@ export default function RootLayout({
           toastOptions={{ duration: 4000 }}
         />
 
-        {/* ✅ QZ Tray Script */}
+        {/* QZ Tray Script */}
         <Script
           src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.5/qz-tray.js"
           strategy="beforeInteractive"

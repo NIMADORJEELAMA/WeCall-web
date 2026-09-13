@@ -34,7 +34,7 @@ export default function LoginPage() {
       localStorage.setItem("access_token", response.data.access_token);
 
       localStorage.setItem("user", JSON.stringify(response.data.user));
-
+      window.dispatchEvent(new Event("auth-changed"));
       // toast.success("Authentication successful. Welcome back!");
 
       // Role-Based Redirect

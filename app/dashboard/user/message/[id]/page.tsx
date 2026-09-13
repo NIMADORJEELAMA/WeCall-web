@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -13,10 +13,11 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { io, Socket } from "socket.io-client";
+
 import api from "@/lib/axios";
 import { format } from "date-fns";
-
+import { useSocket } from "@/components/providers/SocketProvider";
+import { useSocketEvent } from "@/hooks/useSocketEvent";
 import {
   Elements,
   PaymentElement,
@@ -57,21 +58,18 @@ interface ConversationResponse {
   messages: ChatMessage[];
 }
 
-const SOCKET_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000";
-
 export default function RealTimeChatPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-
+  const { socket, connected } = useSocket();
   const creatorId = params.id as string;
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [content, setContent] = useState("");
   const [localUser, setLocalUser] = useState<any>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
+
   const [conversationId, setConversationId] = useState<string | null>(null);
 
   // Stripe
@@ -82,135 +80,179 @@ export default function RealTimeChatPage() {
   // ============================================================
   // LOAD USER + SOCKET
   // ============================================================
-
   useEffect(() => {
     const stored = localStorage.getItem("user");
 
-    if (!stored) return;
-
-    const user = JSON.parse(stored);
-
-    setLocalUser(user);
-
-    const token = localStorage.getItem("access_token");
-
-    const newSocket = io(SOCKET_URL, {
-      auth: {
-        token,
-      },
-      transports: ["websocket"],
-    });
-
-    newSocket.on("connect", () => {
-      console.log("Socket connected:", newSocket.id);
-    });
-
-    newSocket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-    });
-
-    // ==========================================================
-    // CREATOR REPLIED
-    // ==========================================================
-
-    newSocket.on("messageReplied", (data: ChatMessage) => {
-      console.log("💬 REALTIME REPLY:", data);
-
-      queryClient.setQueryData<ConversationResponse>(
-        ["chat", creatorId],
-        (oldData) => {
-          if (!oldData) {
-            return {
-              conversationId: data.conversationId,
-              messages: [data],
-            };
-          }
-
-          const exists = oldData.messages.some(
-            (message) => message.id === data.id,
-          );
-
-          if (exists) {
-            return oldData;
-          }
-
-          return {
-            ...oldData,
-            messages: [...oldData.messages, data],
-          };
-        },
-      );
-
-      queryClient.invalidateQueries({
-        queryKey: ["sent-messages"],
-      });
-    });
-
-    // ==========================================================
-    // NEW MESSAGE
-    // ==========================================================
-
-    newSocket.on("newMessage", (data: ChatMessage) => {
-      console.log("📨 REALTIME NEW MESSAGE:", data);
-
-      queryClient.setQueryData<ConversationResponse>(
-        ["chat", creatorId],
-        (oldData) => {
-          if (!oldData) {
-            return {
-              conversationId: data.conversationId,
-              messages: [data],
-            };
-          }
-
-          const exists = oldData.messages.some(
-            (message) => message.id === data.id,
-          );
-
-          if (exists) {
-            return oldData;
-          }
-
-          return {
-            ...oldData,
-            conversationId: oldData.conversationId ?? data.conversationId,
-            messages: [...oldData.messages, data],
-          };
-        },
-      );
-    });
-
-    // ==========================================================
-    // PAYMENT SUCCEEDED
-    // ==========================================================
-
-    newSocket.on("paymentSucceeded", (data) => {
-      console.log("💰 PAYMENT SUCCEEDED:", data);
-
-      toast.success("Payment successful! Your request has been sent.");
-
-      queryClient.invalidateQueries({
-        queryKey: ["chat", creatorId],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["sent-messages"],
-      });
-    });
-
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.disconnect();
-    };
-  }, [creatorId, queryClient]);
-
+    if (stored) {
+      setLocalUser(JSON.parse(stored));
+    }
+  }, []);
   // ============================================================
   // JOIN CONVERSATION
   // ============================================================
+  // ============================================================
+  // REAL-TIME SOCKET EVENTS
+  // ============================================================
 
+  const handleNewMessage = useCallback(
+    (
+      data: ChatMessage & {
+        creatorId?: string;
+        paidMessageId?: string;
+        expiresAt?: string;
+        payment?: unknown;
+      },
+    ) => {
+      if (!data?.id || !data?.conversationId) {
+        return;
+      }
+
+      // Ignore messages from other conversations.
+      if (data.conversationId !== conversationId) {
+        return;
+      }
+
+      console.log("📩 NEW MESSAGE RECEIVED:", data);
+
+      queryClient.setQueryData<ConversationResponse>(
+        ["chat", creatorId],
+        (current) => {
+          if (!current) {
+            return {
+              conversationId: data.conversationId,
+              messages: [data],
+            };
+          }
+
+          const exists = current.messages.some(
+            (message) => message.id === data.id,
+          );
+
+          if (exists) {
+            return current;
+          }
+
+          return {
+            ...current,
+            conversationId: data.conversationId,
+            messages: [...current.messages, data],
+          };
+        },
+      );
+
+      // Make sure the UI eventually matches the database.
+      // This is a safety sync after the real-time update.
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["chat", creatorId],
+        });
+      }, 500);
+    },
+    [conversationId, creatorId, queryClient],
+  );
+
+  const handleMessageReplied = useCallback(
+    (data: any) => {
+      if (!conversationId) return;
+
+      if (data?.conversationId && data.conversationId !== conversationId) {
+        return;
+      }
+
+      // Depending on your backend payload,
+      // the ChatMessage may be nested or directly returned.
+      const reply =
+        data?.chatMessage ??
+        data?.message ??
+        (data?.id && data?.content && data?.senderId && data?.createdAt
+          ? {
+              id: data.id,
+              conversationId,
+              content: data.content,
+              senderId: data.senderId,
+              createdAt: data.createdAt,
+            }
+          : null);
+
+      if (!reply) {
+        queryClient.invalidateQueries({
+          queryKey: ["chat", creatorId],
+        });
+
+        return;
+      }
+
+      queryClient.setQueryData<ConversationResponse>(
+        ["chat", creatorId],
+        (current) => {
+          if (!current) {
+            return {
+              conversationId,
+              messages: [reply],
+            };
+          }
+
+          const exists = current.messages.some(
+            (message) => message.id === reply.id,
+          );
+
+          if (exists) {
+            return current;
+          }
+
+          return {
+            ...current,
+            conversationId,
+            messages: [...current.messages, reply],
+          };
+        },
+      );
+    },
+    [conversationId, creatorId, queryClient],
+  );
+
+  const handlePaymentSucceeded = useCallback(
+    (data: {
+      messageId?: string;
+      paymentId?: string;
+      conversationId?: string;
+      status?: string;
+    }) => {
+      if (!data?.conversationId) {
+        return;
+      }
+
+      if (data.conversationId !== conversationId) {
+        return;
+      }
+
+      console.log("💰 PAYMENT SUCCEEDED:", data);
+
+      // Give the webhook transaction a moment to finish.
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["chat", creatorId],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["sent-messages"],
+        });
+      }, 300);
+    },
+    [conversationId, creatorId, queryClient],
+  );
+
+  // ============================================================
+  // REGISTER GLOBAL SOCKET LISTENERS
+  // ============================================================
+
+  useSocketEvent<ChatMessage>("newMessage", handleNewMessage);
+
+  useSocketEvent("messageReplied", handleMessageReplied);
+
+  useSocketEvent("paymentSucceeded", handlePaymentSucceeded);
   useEffect(() => {
-    if (!socket || !conversationId) {
+    if (!socket || !connected || !conversationId) {
       return;
     }
 
@@ -233,8 +275,15 @@ export default function RealTimeChatPage() {
         }
       },
     );
-  }, [socket, conversationId]);
 
+    return () => {
+      socket.emit("leaveConversation", {
+        conversationId,
+      });
+
+      console.log("👋 Leaving conversation:", conversationId);
+    };
+  }, [socket, connected, conversationId]);
   // ============================================================
   // CREATOR
   // ============================================================
@@ -357,9 +406,9 @@ export default function RealTimeChatPage() {
         );
       }
 
-      queryClient.invalidateQueries({
-        queryKey: ["chat", creatorId],
-      });
+      // queryClient.invalidateQueries({
+      //   queryKey: ["chat", creatorId],
+      // });
     },
 
     onError: (err: any) => {
@@ -392,16 +441,31 @@ export default function RealTimeChatPage() {
   // ============================================================
 
   const handlePaymentSuccess = () => {
+    console.log("💳 Stripe payment confirmed on frontend");
+
     setClientSecret(null);
     setPaymentMessageId(null);
 
-    queryClient.invalidateQueries({
-      queryKey: ["chat", creatorId],
-    });
+    // DO NOT immediately refetch the chat.
+    //
+    // Stripe confirmation happens before the webhook necessarily
+    // finishes creating the ChatMessage.
+    //
+    // The webhook will emit `newMessage`.
+    //
+    // We also perform a delayed sync as a safety net.
 
-    queryClient.invalidateQueries({
-      queryKey: ["sent-messages"],
-    });
+    setTimeout(() => {
+      console.log("🔄 Syncing chat after payment...");
+
+      queryClient.invalidateQueries({
+        queryKey: ["chat", creatorId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["sent-messages"],
+      });
+    }, 1500);
   };
 
   // ============================================================
