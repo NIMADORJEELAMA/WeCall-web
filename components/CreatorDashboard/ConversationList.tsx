@@ -21,6 +21,7 @@ interface ReceivedMessage {
   payment: { amount: number };
 }
 interface ConversationThread {
+  conversationId: string;
   senderId: string;
   senderName: string;
   avatarUrl?: string | null;
@@ -31,8 +32,8 @@ interface ConversationThread {
 }
 interface ConversationListProps {
   conversations: ConversationThread[];
-  selectedSenderId: string | null;
-  onSelectSender: (senderId: string) => void;
+  selectedConversationId: string | null;
+  onSelectConversation: (conversationId: string) => void;
   isLoading: boolean;
 }
 function formatTime(dateString: string) {
@@ -58,8 +59,8 @@ function getInitials(name: string) {
 }
 export function ConversationList({
   conversations,
-  selectedSenderId,
-  onSelectSender,
+  selectedConversationId,
+  onSelectConversation,
   isLoading,
 }: ConversationListProps) {
   const [search, setSearch] = useState("");
@@ -79,7 +80,9 @@ export function ConversationList({
   ).length;
   return (
     <aside
-      className={` md:col-span-5 w-full md:border-r md:border-slate-200 flex flex-col bg-white ${selectedSenderId ? "hidden md:flex" : "flex"} `}
+      className={`md:col-span-5 w-full md:border-r md:border-slate-200 flex flex-col bg-white ${
+        selectedConversationId ? "hidden md:flex" : "flex"
+      }`}
     >
       {" "}
       {/* Header */}{" "}
@@ -191,12 +194,13 @@ export function ConversationList({
             {" "}
             {filteredConversations.map((thread) => {
               const latestMsg = thread.messages[thread.messages.length - 1];
-              const isSelected = selectedSenderId === thread.senderId;
+              const isSelected =
+                selectedConversationId === thread.conversationId;
               return (
                 <button
-                  key={thread.senderId}
+                  key={thread.conversationId}
                   type="button"
-                  onClick={() => onSelectSender(thread.senderId)}
+                  onClick={() => onSelectConversation(thread.conversationId)}
                   className={` group relative flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-all active:scale-[0.99] ${isSelected ? "bg-blue-50" : "hover:bg-slate-50 active:bg-slate-100"} `}
                 >
                   {" "}

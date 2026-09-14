@@ -35,7 +35,7 @@ interface ConversationThread {
 interface ChatWindowProps {
   activeThread: ConversationThread | undefined;
   activePendingMessage: ReceivedMessage | undefined;
-  selectedSenderId: string | null;
+  selectedConversationId: string | null;
   replyContent: string;
   setReplyContent: (value: string) => void;
   onSendReply: () => void;
@@ -74,7 +74,7 @@ function getInitials(name: string) {
 export function ChatWindow({
   activeThread,
   activePendingMessage,
-  selectedSenderId,
+  selectedConversationId,
   replyContent,
   setReplyContent,
   onSendReply,
@@ -91,7 +91,7 @@ export function ChatWindow({
   };
   return (
     <section
-      className={` md:col-span-7 min-w-0 flex flex-col bg-[#efeae2] ${!selectedSenderId ? "hidden md:flex" : "flex"} `}
+      className={` md:col-span-7 min-w-0 flex flex-col bg-[#efeae2] ${!selectedConversationId ? "hidden md:flex" : "flex"} `}
       style={{ height: "100dvh", maxHeight: "100%" }}
     >
       {" "}

@@ -1,15 +1,16 @@
 // app/creator-dashboard/page.tsx
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { toast } from "react-hot-toast";
-import { io, Socket } from "socket.io-client";
 import { ConversationList } from "@/components/CreatorDashboard/ConversationList";
 import { ChatWindow } from "@/components/CreatorDashboard/ChatWindow";
 import { BottomNav } from "@/components/CreatorDashboard/BottomNav";
 import { ProfileView } from "@/components/CreatorDashboard/ProfileView";
+import { useSocket } from "@/components/providers/SocketProvider";
+import { useSocketEvent } from "@/hooks/useSocketEvent";
 
 interface Sender {
   id?: string;
@@ -53,61 +54,23 @@ interface ConversationThread {
 
 export default function CreatorDashboard() {
   const queryClient = useQueryClient();
-  const [selectedSenderId, setSelectedSenderId] = useState<string | null>(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    string | null
+  >(null);
   const [replyContent, setReplyContent] = useState("");
-  const [, setSocket] = useState<Socket | null>(null);
+  const { socket } = useSocket();
   const [activeTab, setActiveTab] = useState<"messages" | "profile">(
     "messages",
   );
 
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (!stored) return;
-
-    const user = JSON.parse(stored);
-    const accessToken = localStorage.getItem("access_token");
-
-    const newSocket = io(
-      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000",
-      {
-        auth: {
-          token: accessToken,
-        },
-        transports: ["websocket"],
-      },
-    );
-    // const newSocket = io(
-    //   process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000",
-    //   {
-    //     query: { userId: user.id },
-    //     transports: ["websocket"],
-    //   },
-    // );
-
-    newSocket.on("connect", () => {
-      console.log("Creator socket connected:", newSocket.id);
-    });
-
-    newSocket.on("newMessage", () => {
-      queryClient.invalidateQueries({ queryKey: ["creator-messages"] });
-    });
-    newSocket.on("paymentSucceeded", (data) => {
-      console.log("💰 Payment succeeded:", data);
-
-      queryClient.invalidateQueries({
-        queryKey: ["creator-messages"],
-      });
-    });
-    newSocket.on("messageReplied", () => {
-      queryClient.invalidateQueries({ queryKey: ["creator-messages"] });
-    });
-
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.disconnect();
-    };
+  const handleRealtimeRefresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["creator-messages"] });
   }, [queryClient]);
+
+  useSocketEvent("newMessage", handleRealtimeRefresh);
+  useSocketEvent("paymentSucceeded", handleRealtimeRefresh);
+  useSocketEvent("messageReplied", handleRealtimeRefresh);
+  useSocketEvent("conversationUpdated", handleRealtimeRefresh);
 
   const { data: messages = [], isLoading } = useQuery<ReceivedMessage[]>({
     queryKey: ["creator-messages"],
@@ -115,9 +78,6 @@ export default function CreatorDashboard() {
       const res = await api.get("/messages/incoming");
       return res.data;
     },
-
-    refetchInterval: 3000,
-    refetchIntervalInBackground: true,
   });
 
   const conversations = useMemo(() => {
@@ -189,7 +149,7 @@ export default function CreatorDashboard() {
     );
   }, [messages]);
   const activeThread = conversations.find(
-    (c) => c.senderId === selectedSenderId,
+    (c) => c.conversationId === selectedConversationId,
   );
 
   const activePendingMessage = activeThread?.messages
@@ -231,6 +191,30 @@ export default function CreatorDashboard() {
     });
   };
 
+  const handleSelectConversation = useCallback(
+    (conversationId: string) => {
+      setSelectedConversationId(conversationId);
+      socket?.emit(
+        "joinConversation",
+        { conversationId },
+        (response: unknown) => {
+          console.log("joinConversation:", response);
+        },
+      );
+    },
+    [socket],
+  );
+
+  const handleLeaveConversation = useCallback(() => {
+    if (!selectedConversationId) return;
+
+    socket?.emit("leaveConversation", {
+      conversationId: selectedConversationId,
+    });
+
+    setSelectedConversationId(null);
+  }, [socket, selectedConversationId]);
+
   const hasUnreadMessages = conversations.some((c) => c.hasPending);
 
   return (
@@ -242,19 +226,19 @@ export default function CreatorDashboard() {
           <>
             <ConversationList
               conversations={conversations}
-              selectedSenderId={selectedSenderId}
-              onSelectSender={setSelectedSenderId}
+              selectedConversationId={selectedConversationId}
+              onSelectConversation={setSelectedConversationId}
               isLoading={isLoading}
             />
             <ChatWindow
               activeThread={activeThread}
               activePendingMessage={activePendingMessage}
-              selectedSenderId={selectedSenderId}
+              selectedConversationId={selectedConversationId}
               replyContent={replyContent}
               setReplyContent={setReplyContent}
               onSendReply={handleSendReply}
               isSendingReply={replyMutation.isPending}
-              onBack={() => setSelectedSenderId(null)}
+              onBack={() => setSelectedConversationId(null)}
             />
           </>
         )}
