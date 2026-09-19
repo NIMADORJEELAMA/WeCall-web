@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import {
   ChevronLeft,
   Info,
@@ -61,7 +66,22 @@ interface ChatMessage {
 
 interface ConversationResponse {
   conversationId: string | null;
+  userId?: string;
+  creatorId?: string;
+}
+
+interface ConversationMessagesResponse {
+  conversationId: string;
+  userId: string;
+  creatorId: string;
+
   messages: ChatMessage[];
+
+  pagination: {
+    limit: number;
+    hasMore: boolean;
+    nextCursor: string | null;
+  };
 }
 
 export default function RealTimeChatPage() {
@@ -72,7 +92,10 @@ export default function RealTimeChatPage() {
   const creatorId = params.id as string;
 
   const scrollRef = useRef<HTMLDivElement>(null);
-
+  const previousScrollHeightRef = useRef(0);
+  const shouldRestoreScrollRef = useRef(false);
+  const initialScrollDoneRef = useRef(false);
+  const previousConversationIdRef = useRef<string | null>(null);
   const [content, setContent] = useState("");
   const [localUser, setLocalUser] = useState<any>(null);
 
@@ -100,6 +123,70 @@ export default function RealTimeChatPage() {
   // REAL-TIME SOCKET EVENTS
   // ============================================================
 
+  const {
+    data: chatPages,
+    isLoading: loadingMessages,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery<ConversationMessagesResponse>({
+    queryKey: ["chat", conversationId],
+
+    enabled: !!conversationId,
+
+    initialPageParam: undefined as string | undefined,
+
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams();
+
+      params.set("limit", "30");
+
+      if (pageParam) {
+        params.set("cursor", String(pageParam));
+      }
+
+      const res = await api.get(
+        `/messages/${conversationId}/messages?${params.toString()}`,
+      );
+
+      return res.data;
+    },
+
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.pagination?.hasMore) {
+        return undefined;
+      }
+
+      return lastPage.pagination.nextCursor || undefined;
+    },
+
+    staleTime: 0,
+
+    refetchOnWindowFocus: false,
+  });
+
+  // ============================================================
+  // FLATTEN + DEDUPE PAGINATED MESSAGES
+  // ============================================================
+
+  const messages = useMemo(() => {
+    if (!chatPages?.pages) {
+      return [];
+    }
+
+    const allMessages = chatPages.pages.flatMap((page) => page.messages || []);
+
+    const messageMap = new Map<string, ChatMessage>();
+
+    for (const message of allMessages) {
+      messageMap.set(message.id, message);
+    }
+
+    return Array.from(messageMap.values()).sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+  }, [chatPages]);
   const handleNewMessage = useCallback(
     (
       data: ChatMessage & {
@@ -113,60 +200,86 @@ export default function RealTimeChatPage() {
         return;
       }
 
-      // Ignore messages from other conversations.
+      // Ignore messages from another conversation.
       if (data.conversationId !== conversationId) {
         return;
       }
 
       console.log("📩 NEW MESSAGE RECEIVED:", data);
 
-      queryClient.setQueryData<ConversationResponse>(
-        ["chat", creatorId],
-        (current) => {
-          if (!current) {
-            return {
-              conversationId: data.conversationId,
-              messages: [data],
-            };
-          }
+      queryClient.setQueryData(["chat", conversationId], (old: any) => {
+        if (!old?.pages) {
+          return old;
+        }
 
-          const exists = current.messages.some(
-            (message) => message.id === data.id,
-          );
+        const alreadyExists = old.pages.some(
+          (page: ConversationMessagesResponse) =>
+            page.messages?.some((message) => message.id === data.id),
+        );
 
-          if (exists) {
-            return current;
-          }
+        if (alreadyExists) {
+          return old;
+        }
 
-          return {
-            ...current,
-            conversationId: data.conversationId,
-            messages: [...current.messages, data],
-          };
-        },
-      );
+        const pages = [...old.pages];
 
-      // Make sure the UI eventually matches the database.
-      // This is a safety sync after the real-time update.
+        const firstPage = pages[0];
+
+        if (!firstPage) {
+          return old;
+        }
+
+        pages[0] = {
+          ...firstPage,
+
+          messages: [...(firstPage.messages || []), data],
+        };
+
+        return {
+          ...old,
+          pages,
+        };
+      });
+
+      // Only scroll if the user is already near the bottom.
+      requestAnimationFrame(() => {
+        const container = scrollRef.current;
+
+        if (!container) {
+          return;
+        }
+
+        const distanceFromBottom =
+          container.scrollHeight - container.scrollTop - container.clientHeight;
+
+        if (distanceFromBottom < 150) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      });
+
+      // Safety sync.
       setTimeout(() => {
         queryClient.invalidateQueries({
-          queryKey: ["chat", creatorId],
+          queryKey: ["chat", conversationId],
         });
       }, 500);
     },
-    [conversationId, creatorId, queryClient],
+    [conversationId, queryClient],
   );
 
   const handleMessageReplied = useCallback(
     (data: any) => {
-      if (!conversationId) return;
+      if (!conversationId) {
+        return;
+      }
 
       if (data?.conversationId && data.conversationId !== conversationId) {
         return;
       }
 
-      // Depending on your backend payload,
-      // the ChatMessage may be nested or directly returned.
       const reply =
         data?.chatMessage ??
         data?.message ??
@@ -177,46 +290,106 @@ export default function RealTimeChatPage() {
               content: data.content,
               senderId: data.senderId,
               createdAt: data.createdAt,
+              replyToMessageId: data.replyToMessageId ?? null,
             }
           : null);
 
       if (!reply) {
         queryClient.invalidateQueries({
-          queryKey: ["chat", creatorId],
+          queryKey: ["chat", conversationId],
         });
 
         return;
       }
 
-      queryClient.setQueryData<ConversationResponse>(
-        ["chat", creatorId],
-        (current) => {
-          if (!current) {
-            return {
-              conversationId,
-              messages: [reply],
-            };
-          }
+      queryClient.setQueryData(["chat", conversationId], (old: any) => {
+        if (!old?.pages) {
+          return old;
+        }
 
-          const exists = current.messages.some(
-            (message) => message.id === reply.id,
-          );
+        const alreadyExists = old.pages.some(
+          (page: ConversationMessagesResponse) =>
+            page.messages?.some((message) => message.id === reply.id),
+        );
 
-          if (exists) {
-            return current;
-          }
+        if (alreadyExists) {
+          return old;
+        }
 
-          return {
-            ...current,
-            conversationId,
-            messages: [...current.messages, reply],
-          };
-        },
-      );
+        const pages = [...old.pages];
+
+        const firstPage = pages[0];
+
+        if (!firstPage) {
+          return old;
+        }
+
+        pages[0] = {
+          ...firstPage,
+
+          messages: [...(firstPage.messages || []), reply],
+        };
+
+        return {
+          ...old,
+          pages,
+        };
+      });
+
+      // Scroll only when already near the bottom.
+      requestAnimationFrame(() => {
+        const container = scrollRef.current;
+
+        if (!container) {
+          return;
+        }
+
+        const distanceFromBottom =
+          container.scrollHeight - container.scrollTop - container.clientHeight;
+
+        if (distanceFromBottom < 150) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      });
     },
-    [conversationId, creatorId, queryClient],
+    [conversationId, queryClient],
   );
 
+  // ============================================================
+  // LOAD OLDER MESSAGES
+  // ============================================================
+
+  const handleLoadOlderMessages = useCallback(async () => {
+    if (!scrollRef.current || !hasNextPage || isFetchingNextPage) {
+      return;
+    }
+
+    // Save current scroll position before older messages are added.
+    previousScrollHeightRef.current = scrollRef.current.scrollHeight;
+
+    shouldRestoreScrollRef.current = true;
+
+    await fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  // ============================================================
+  // INFINITE SCROLL
+  // ============================================================
+
+  const handleScroll = useCallback(() => {
+    const container = scrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    // User reached the top.
+    if (container.scrollTop <= 100 && hasNextPage && !isFetchingNextPage) {
+      handleLoadOlderMessages();
+    }
+  }, [hasNextPage, isFetchingNextPage, handleLoadOlderMessages]);
   const handlePaymentSucceeded = useCallback(
     (data: {
       messageId?: string;
@@ -237,7 +410,7 @@ export default function RealTimeChatPage() {
       // Give the webhook transaction a moment to finish.
       setTimeout(() => {
         queryClient.invalidateQueries({
-          queryKey: ["chat", creatorId],
+          queryKey: ["chat", conversationId],
         });
 
         queryClient.invalidateQueries({
@@ -309,52 +482,128 @@ export default function RealTimeChatPage() {
   // ============================================================
   // CONVERSATION
   // ============================================================
+  // ============================================================
+  // GET CONVERSATION ID
+  // ============================================================
 
-  const {
-    data: conversationData,
-    isLoading: loadingMessages,
-    error: messagesError,
-  } = useQuery<ConversationResponse>({
-    queryKey: ["chat", creatorId],
+  const { data: conversationData, isLoading: loadingConversation } =
+    useQuery<ConversationResponse>({
+      queryKey: ["chat-conversation", creatorId],
 
-    queryFn: async () => {
-      const res = await api.get(`/messages/conversation/${creatorId}`);
+      queryFn: async () => {
+        const res = await api.get(`/messages/conversation/${creatorId}`);
 
-      return res.data;
-    },
+        return res.data;
+      },
 
-    enabled: !!creatorId,
+      enabled: !!creatorId,
 
-    staleTime: 0,
+      staleTime: 0,
 
-    gcTime: 0,
+      refetchOnMount: "always",
 
-    refetchOnMount: "always",
+      refetchOnWindowFocus: false,
+    });
 
-    refetchOnWindowFocus: false,
-  });
-
-  const messages = conversationData?.messages ?? [];
+  // ============================================================
+  // SET CONVERSATION ID
+  // ============================================================
 
   useEffect(() => {
-    if (conversationData?.conversationId) {
-      setConversationId(conversationData.conversationId);
-    } else {
-      setConversationId(null);
+    const nextConversationId = conversationData?.conversationId ?? null;
+
+    setConversationId(nextConversationId);
+
+    if (previousConversationIdRef.current !== nextConversationId) {
+      initialScrollDoneRef.current = false;
+      previousConversationIdRef.current = nextConversationId;
     }
   }, [conversationData]);
+
+  // ============================================================
+  // PAGINATED CHAT HISTORY
+  // ============================================================
+
+  // const {
+  //   data: conversationData,
+  //   isLoading: loadingMessages,
+  //   error: messagesError,
+  // } = useQuery<ConversationResponse>({
+  //   queryKey: ["chat", creatorId],
+
+  //   queryFn: async () => {
+  //     const res = await api.get(`/messages/conversation/${creatorId}`);
+
+  //     return res.data;
+  //   },
+
+  //   enabled: !!creatorId,
+
+  //   staleTime: 0,
+
+  //   gcTime: 0,
+
+  //   refetchOnMount: "always",
+
+  //   refetchOnWindowFocus: false,
+  // });
+
+  // const messages = conversationData?.messages ?? [];
+
+  // useEffect(() => {
+  //   if (conversationData?.conversationId) {
+  //     setConversationId(conversationData.conversationId);
+  //   } else {
+  //     setConversationId(null);
+  //   }
+  // }, [conversationData]);
 
   // ============================================================
   // SCROLL
   // ============================================================
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
   // ============================================================
+  // SCROLL POSITION MANAGEMENT
+  // ============================================================
+
+  useEffect(() => {
+    const container = scrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    // ----------------------------------------------------------
+    // RESTORE POSITION AFTER LOADING OLDER MESSAGES
+    // ----------------------------------------------------------
+
+    if (shouldRestoreScrollRef.current) {
+      const newScrollHeight = container.scrollHeight;
+
+      const heightDifference =
+        newScrollHeight - previousScrollHeightRef.current;
+
+      container.scrollTop = container.scrollTop + heightDifference;
+
+      shouldRestoreScrollRef.current = false;
+
+      return;
+    }
+
+    // ----------------------------------------------------------
+    // INITIAL LOAD -> BOTTOM
+    // ----------------------------------------------------------
+
+    if (messages.length > 0 && !initialScrollDoneRef.current) {
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+
+        initialScrollDoneRef.current = true;
+      });
+    }
+  }, [messages]); // ============================================================
   // CREATE PENDING MESSAGE
   // ============================================================
 
@@ -465,7 +714,7 @@ export default function RealTimeChatPage() {
       console.log("🔄 Syncing chat after payment...");
 
       queryClient.invalidateQueries({
-        queryKey: ["chat", creatorId],
+        queryKey: ["chat", conversationId],
       });
 
       queryClient.invalidateQueries({
@@ -547,6 +796,7 @@ export default function RealTimeChatPage() {
 
         <div
           ref={scrollRef}
+          onScroll={handleScroll}
           className="flex-1 overflow-y-auto p-4 space-y-4"
           style={{
             scrollBehavior: "smooth",
