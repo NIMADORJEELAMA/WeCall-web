@@ -55,7 +55,7 @@ interface ChatMessage {
   content: string;
   senderId: string;
   createdAt: string;
-  status?: "PENDING_PAYMENT" | "PAID" | "AWAITING_REPLY" | "REPLIED";
+  status?: "PENDING_PAYMENT" | "AWAITING_REPLY" | "REPLIED";
   replyToMessage?: {
     id: string;
     content: string;
