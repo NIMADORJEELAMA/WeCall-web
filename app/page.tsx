@@ -7,41 +7,46 @@
 //   const router = useRouter();
 
 //   useEffect(() => {
-//     const token = localStorage.getItem("token");
+//     // const token = localStorage.getItem("token");
+//     const token = localStorage.getItem("access_token");
+
 //     if (!token) {
-//       router.push("/login");
+//       router.replace("/login"); // ✅ better
 //     } else {
-//       router.push("/dashboard");
+//       router.replace("/dashboard/user"); // ✅ better
 //     }
 //   }, [router]);
 
 //   return (
 //     <div className="h-screen w-full flex items-center justify-center bg-white">
-//       <div className="flex flex-col items-center gap-3">
-//         {/* Simple, clean Indigo spinner */}
-//         <Loader2 className="animate-spin text-indigo-600" size={32} />
-//       </div>
+//       <Loader2 className="animate-spin text-indigo-600" size={32} />
 //     </div>
 //   );
 // }
 
 "use client";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+
+import api from "@/lib/axios";
 
 export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // const token = localStorage.getItem("token");
-    const token = localStorage.getItem("access_token");
+    const checkAuth = async () => {
+      try {
+        await api.get("/auth/me");
 
-    if (!token) {
-      router.replace("/login"); // ✅ better
-    } else {
-      router.replace("/dashboard/user"); // ✅ better
-    }
+        router.replace("/dashboard/user");
+      } catch {
+        router.replace("/login");
+      }
+    };
+
+    checkAuth();
   }, [router]);
 
   return (

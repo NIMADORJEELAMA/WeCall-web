@@ -10,8 +10,8 @@ import {
 } from "lucide-react";
 import api from "@/lib/axios";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
+import LogoutButton from "@/components/Buttons/LogoutButton";
 interface Conversation {
   id: string;
   conversationId: string;
@@ -37,14 +37,6 @@ export default function UserDashboard() {
   const [activeView, setActiveView] = useState<"chats" | "profile">("chats");
   const [localUser, setLocalUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    router.push("/login");
-  };
 
   function formatMessageTime(date: string) {
     const messageDate = new Date(date);
@@ -73,11 +65,25 @@ export default function UserDashboard() {
   }
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
+    let mounted = true;
 
-    if (stored) {
-      setLocalUser(JSON.parse(stored));
-    }
+    const loadUser = async () => {
+      try {
+        const response = await api.get("/auth/me");
+
+        if (mounted) {
+          setLocalUser(response.data.user);
+        }
+      } catch (error) {
+        console.error("Failed to load authenticated user:", error);
+      }
+    };
+
+    loadUser();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const { data: conversations = [], isLoading: loadingConversations } =
@@ -239,12 +245,7 @@ export default function UserDashboard() {
               </div>
             </div>
 
-            <button
-              onClick={handleLogout}
-              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 px-4 py-3 rounded-xl text-xs font-semibold transition-colors"
-            >
-              Sign Out
-            </button>
+            <LogoutButton className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 px-4 py-3 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed" />
           </div>
         </div>
       )}

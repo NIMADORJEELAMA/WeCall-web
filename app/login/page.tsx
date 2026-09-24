@@ -25,15 +25,15 @@ export default function LoginPage() {
         password,
       });
 
-      const { access_token, user } = response.data;
+      const { user } = response.data;
 
       // Save credentials
       // localStorage.setItem("token", access_token);
       // localStorage.setItem("user", JSON.stringify(user));
 
-      localStorage.setItem("access_token", response.data.access_token);
+      // localStorage.setItem("access_token", response.data.access_token);
 
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      // localStorage.setItem("user", JSON.stringify(response.data.user));
       window.dispatchEvent(new Event("auth-changed"));
       // toast.success("Authentication successful. Welcome back!");
 
