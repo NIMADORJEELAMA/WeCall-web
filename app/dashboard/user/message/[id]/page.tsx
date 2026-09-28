@@ -12,10 +12,16 @@ import {
   ChevronLeft,
   Info,
   Send,
+  Paperclip,
+  Phone,
+  MessageCircle,
+  Users,
+  Settings,
   Loader2,
   Lock,
   ShieldCheck,
   X,
+  Search,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -64,6 +70,24 @@ interface ChatMessage {
   } | null;
 }
 
+interface SidebarConversation {
+  id: string;
+  conversationId: string;
+  participant: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+  latestMessage: {
+    id: string;
+    senderId: string;
+    content: string;
+    createdAt: string;
+  } | null;
+  updatedAt: string;
+  role: "USER" | "CREATOR";
+}
+
 interface ConversationResponse {
   conversationId: string | null;
   userId?: string;
@@ -97,7 +121,32 @@ export default function RealTimeChatPage() {
   const initialScrollDoneRef = useRef(false);
   const previousConversationIdRef = useRef<string | null>(null);
   const [content, setContent] = useState("");
-  const [localUser, setLocalUser] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Keep the composer above the mobile keyboard when the browser exposes
+  // the visual viewport (iOS Safari / modern mobile browsers).
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const updateKeyboardHeight = () => {
+      const height = Math.max(
+        0,
+        window.innerHeight - viewport.height - viewport.offsetTop,
+      );
+      setKeyboardHeight(height);
+    };
+
+    updateKeyboardHeight();
+    viewport.addEventListener("resize", updateKeyboardHeight);
+    viewport.addEventListener("scroll", updateKeyboardHeight);
+
+    return () => {
+      viewport.removeEventListener("resize", updateKeyboardHeight);
+      viewport.removeEventListener("scroll", updateKeyboardHeight);
+    };
+  }, []);
 
   const [conversationId, setConversationId] = useState<string | null>(null);
 
@@ -106,16 +155,6 @@ export default function RealTimeChatPage() {
 
   const [paymentMessageId, setPaymentMessageId] = useState<string | null>(null);
 
-  // ============================================================
-  // LOAD USER + SOCKET
-  // ============================================================
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-
-    if (stored) {
-      setLocalUser(JSON.parse(stored));
-    }
-  }, []);
   // ============================================================
   // JOIN CONVERSATION
   // ============================================================
@@ -201,13 +240,12 @@ export default function RealTimeChatPage() {
       }
 
       // Ignore messages from another conversation.
-      if (data.conversationId !== conversationId) {
+      if (conversationId && data.conversationId !== conversationId) {
         return;
       }
-
       console.log("📩 NEW MESSAGE RECEIVED:", data);
 
-      queryClient.setQueryData(["chat", conversationId], (old: any) => {
+      queryClient.setQueryData(["chat", data.conversationId], (old: any) => {
         if (!old?.pages) {
           return old;
         }
@@ -480,6 +518,44 @@ export default function RealTimeChatPage() {
   });
 
   // ============================================================
+  // DESKTOP CONVERSATION SIDEBAR
+  // ============================================================
+
+  const { data: sidebarConversations = [], isLoading: loadingSidebar } =
+    useQuery<SidebarConversation[]>({
+      queryKey: ["my-conversations"],
+      queryFn: async () => {
+        const res = await api.get("/messages/my-conversations");
+        return res.data;
+      },
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+    });
+
+  const filteredSidebarConversations = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return sidebarConversations;
+    return sidebarConversations.filter((item) =>
+      item.participant?.name?.toLowerCase().includes(query),
+    );
+  }, [sidebarConversations, searchQuery]);
+
+  const formatSidebarTime = useCallback((date: string) => {
+    const value = new Date(date);
+    const now = new Date();
+    if (value.toDateString() === now.toDateString()) {
+      return value.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (value.toDateString() === yesterday.toDateString()) return "Yesterday";
+    return value.toLocaleDateString([], { month: "short", day: "numeric" });
+  }, []);
+
+  // ============================================================
   // CONVERSATION
   // ============================================================
   // ============================================================
@@ -626,6 +702,16 @@ export default function RealTimeChatPage() {
 
       if (data?.conversationId) {
         setConversationId(data.conversationId);
+
+        queryClient.setQueryData(
+          ["chat-conversation", creatorId],
+          (old: ConversationResponse | undefined) => ({
+            ...old,
+            conversationId: data.conversationId,
+            userId: old?.userId,
+            creatorId: old?.creatorId ?? creatorId,
+          }),
+        );
       }
 
       const messageId = data?.id;
@@ -737,7 +823,8 @@ export default function RealTimeChatPage() {
   // ============================================================
 
   const hasPendingRequest = messages.some(
-    (m) => m.senderId === localUser?.id && m.status === "AWAITING_REPLY",
+    (m) =>
+      m.senderId === conversationData?.userId && m.status === "AWAITING_REPLY",
   );
 
   // ============================================================
@@ -756,187 +843,321 @@ export default function RealTimeChatPage() {
 
   return (
     <>
-      <div className="flex flex-col h-screen bg-slate-50 font-sans">
-        {/* ================================================== */}
-        {/* HEADER */}
-        {/* ================================================== */}
-
-        <header className="flex-shrink-0 bg-white/90 backdrop-blur-xl border-b border-slate-200/60 h-16 flex items-center px-4 z-20 shadow-sm">
-          <button
-            onClick={() => router.back()}
-            className="p-2 -ml-2 text-slate-500 hover:text-slate-900 transition-colors rounded-full hover:bg-slate-100"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          <div className="flex items-center gap-3 ml-2 flex-1">
-            <div className="w-10 h-10 bg-gradient-to-tr from-blue-100 to-blue-50 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200/50">
-              {creator.name?.charAt(0).toUpperCase()}
-            </div>
-
-            <div>
-              <h2 className="font-bold text-slate-900 text-sm leading-tight">
-                {creator.name}
-              </h2>
-
-              <p className="text-slate-500 text-xs font-medium">
-                @{creator.name?.toLowerCase().replace(/\s+/g, "")}
-              </p>
-            </div>
-          </div>
-
-          <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-            <Info size={20} />
-          </button>
-        </header>
-
-        {/* ================================================== */}
-        {/* CHAT */}
-        {/* ================================================== */}
-
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="flex-1 overflow-y-auto p-4 space-y-4"
-          style={{
-            scrollBehavior: "smooth",
-          }}
-        >
-          <div className="flex flex-col items-center justify-center p-6 mb-4">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 mb-3 text-blue-600">
-              <ShieldCheck size={32} strokeWidth={1.5} />
-            </div>
-
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-              Escrow Protected
-            </p>
-
-            <p className="text-sm text-slate-500 text-center max-w-xs">
-              @{creator.name} charges <strong>${replyPrice}</strong> per reply.
-              If they don't respond within 7 days, your card is never charged.
-            </p>
-          </div>
-
-          {loadingMessages ? (
-            <div className="flex justify-center p-4">
-              <Loader2 className="animate-spin text-slate-300" size={24} />
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="text-center text-slate-400 text-sm mt-10">
-              Send a message to start the conversation.
-            </div>
-          ) : (
-            messages.map((msg, idx) => {
-              const isMe = msg.senderId === localUser?.id;
-
-              return (
-                <div
-                  key={msg.id || idx}
-                  className={`flex flex-col ${
-                    isMe ? "items-end" : "items-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-[15px] ${
-                      isMe
-                        ? "bg-blue-600 text-white rounded-br-sm"
-                        : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm shadow-sm"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-
-                  <div className="flex items-center gap-2 mt-1 px-1">
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      {format(new Date(msg.createdAt), "h:mm a")}
-                    </span>
-
-                    {isMe && msg.status === "PENDING_PAYMENT" && (
-                      <span className="text-[10px] font-bold text-amber-500 flex items-center gap-0.5">
-                        <Lock size={10} />
-                        Payment Required
-                      </span>
-                    )}
-
-                    {isMe && msg.status === "AWAITING_REPLY" && (
-                      <span className="text-[10px] font-bold text-amber-500 flex items-center gap-0.5">
-                        <Lock size={10} />
-                        Escrow Hold
-                      </span>
-                    )}
-
-                    {isMe && msg.status === "REPLIED" && (
-                      <span className="text-[10px] font-bold text-emerald-500">
-                        Paid
-                      </span>
-                    )}
-                  </div>
+      <div className="h-[100dvh] overflow-hidden bg-[#f0f2f5] font-sans text-slate-800">
+        <div className="mx-auto flex h-full w-full max-w-[1600px] overflow-hidden bg-white shadow-xl lg:my-0 lg:h-full lg:border-x lg:border-slate-200">
+          {/* ================================================== */}
+          {/* DESKTOP SIDEBAR */}
+          {/* ================================================== */}
+          <aside className="hidden w-[360px] flex-shrink-0 border-r border-slate-200 bg-white md:flex md:flex-col">
+            <div className="flex h-[68px] items-center justify-between border-b border-slate-200 bg-[#f0f2f5] px-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-bold">
+                  U
                 </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* ================================================== */}
-        {/* INPUT */}
-        {/* ================================================== */}
-
-        <div className="flex-shrink-0 bg-white border-t border-slate-200/60 p-3 pb-safe">
-          {hasPendingRequest ? (
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
-              <p className="text-sm font-medium text-amber-800">
-                Waiting for reply
-              </p>
-
-              <p className="text-xs text-amber-600/80 mt-0.5">
-                You have an active authorization hold. You can send another
-                message once @{creator.name} replies.
-              </p>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Chats</p>
+                  <p className="text-[11px] text-slate-500">
+                    Your conversations
+                  </p>
+                </div>
+              </div>
+              <button
+                className="rounded-full p-2 text-slate-500 hover:bg-white"
+                type="button"
+              >
+                <MessageCircle size={20} />
+              </button>
             </div>
-          ) : (
-            <form onSubmit={handleSend} className="flex items-end gap-2">
-              <div className="flex-1 bg-slate-100 rounded-2xl border border-transparent focus-within:border-blue-200 focus-within:bg-white transition-all overflow-hidden flex flex-col">
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Message..."
-                  className="w-full bg-transparent p-3 max-h-32 min-h-[44px] text-[15px] focus:outline-none resize-none no-scrollbar"
-                  rows={1}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
 
-                    target.style.height = "auto";
-
-                    target.style.height = `${target.scrollHeight}px`;
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend(e);
-                    }
-                  }}
+            <div className="border-b border-slate-100 bg-white p-3">
+              <div className="relative">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={17}
+                />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search or start new chat"
+                  className="h-10 w-full rounded-lg bg-[#f0f2f5] pl-10 pr-3 text-sm outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-100"
                 />
               </div>
+            </div>
 
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {loadingSidebar ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="animate-spin text-slate-400" size={24} />
+                </div>
+              ) : filteredSidebarConversations.length === 0 ? (
+                <div className="px-6 py-14 text-center">
+                  <MessageCircle
+                    className="mx-auto mb-3 text-slate-300"
+                    size={42}
+                  />
+                  <p className="text-sm font-semibold text-slate-700">
+                    No conversations
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Your chats will appear here.
+                  </p>
+                </div>
+              ) : (
+                filteredSidebarConversations.map((item) => {
+                  const active = item.participant?.id === creatorId;
+                  const participant = item.participant;
+                  const latest = item.latestMessage;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() =>
+                        router.push(`/dashboard/user/message/${participant.id}`)
+                      }
+                      className={`flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition ${
+                        active ? "bg-[#e9edef]" : "hover:bg-[#f5f6f6]"
+                      }`}
+                    >
+                      <div className="relative flex-shrink-0">
+                        {participant.avatarUrl ? (
+                          <img
+                            src={participant.avatarUrl}
+                            alt={participant.name}
+                            className="h-12 w-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700">
+                            {participant.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        {active && (
+                          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-[15px] font-semibold text-slate-900">
+                            {participant.name}
+                          </p>
+                          {latest && (
+                            <span className="flex-shrink-0 text-[10px] text-slate-400">
+                              {formatSidebarTime(latest.createdAt)}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 truncate text-xs text-slate-500">
+                          {latest?.content || "Tap to start chatting"}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </aside>
+
+          {/* ================================================== */}
+          {/* CHAT PANEL */}
+          {/* ================================================== */}
+          <section className="flex min-w-0 flex-1 flex-col bg-[#efeae2]">
+            {/* Header */}
+            <header className="z-20 flex h-[68px] flex-shrink-0 items-center border-b border-slate-200 bg-[#f0f2f5] px-2 sm:px-4 shadow-sm">
               <button
-                type="submit"
-                disabled={!content.trim() || sendMessageMutation.isPending}
-                className="flex-shrink-0 w-11 h-11 bg-blue-600 text-white rounded-full flex items-center justify-center transition-transform active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:transform-none"
+                type="button"
+                onClick={() => router.back()}
+                aria-label="Go back"
+                className="mr-1 flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-white md:hidden"
               >
-                {sendMessageMutation.isPending ? (
-                  <Loader2 size={20} className="animate-spin" />
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <Send size={16} className="-ml-0.5 mt-0.5" />
+                <ChevronLeft size={23} />
+              </button>
 
-                    <span className="text-[8px] font-black tracking-tighter leading-none mt-0.5">
-                      ${replyPrice}
-                    </span>
+              <div className="relative flex-shrink-0">
+                {creator.avatarUrl ? (
+                  <img
+                    src={creator.avatarUrl}
+                    alt={creator.name}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700">
+                    {creator.name?.charAt(0).toUpperCase()}
                   </div>
                 )}
-              </button>
-            </form>
-          )}
+                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
+              </div>
+
+              <div className="ml-3 min-w-0 flex-1">
+                <h2 className="truncate text-[15px] font-semibold text-slate-900">
+                  {creator.name}
+                </h2>
+                <p className="text-[11px] text-emerald-600">Online</p>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  className="hidden h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-white md:flex"
+                >
+                  <Search size={19} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Conversation information"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-white"
+                >
+                  <Info size={20} />
+                </button>
+              </div>
+            </header>
+
+            {/* Messages */}
+            <main
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 lg:px-8"
+              style={{
+                scrollBehavior: "smooth",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              <div className="mx-auto flex max-w-4xl flex-col gap-2">
+                <div className="mx-auto mb-4 rounded-lg bg-[#fff5c4] px-3 py-2 text-center shadow-sm">
+                  <p className="text-[11px] font-medium text-amber-800">
+                    🔒 @{creator.name} charges <strong>${replyPrice}</strong>{" "}
+                    per reply. Your payment is protected.
+                  </p>
+                </div>
+
+                {loadingMessages ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2
+                      className="animate-spin text-slate-400"
+                      size={24}
+                    />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="my-auto py-20 text-center text-sm text-slate-500">
+                    Send a message to start the conversation.
+                  </div>
+                ) : (
+                  messages.map((msg, idx) => {
+                    const isMe = msg.senderId === conversationData?.userId;
+                    return (
+                      <div
+                        key={msg.id || idx}
+                        className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[82%] sm:max-w-[65%] lg:max-w-[60%] ${isMe ? "items-end" : "items-start"} flex flex-col`}
+                        >
+                          <div
+                            className={`rounded-2xl px-3.5 py-2 text-[14px] leading-relaxed shadow-sm ${isMe ? "rounded-br-sm bg-[#d9fdd3] text-slate-800" : "rounded-bl-sm bg-white text-slate-800"}`}
+                          >
+                            {msg.replyToMessage && (
+                              <div className="mb-2 rounded-lg border-l-4 border-blue-500 bg-black/5 px-2 py-1 text-xs text-slate-500">
+                                <p className="line-clamp-2">
+                                  {msg.replyToMessage.content}
+                                </p>
+                              </div>
+                            )}
+                            <p className="whitespace-pre-wrap break-words">
+                              {msg.content}
+                            </p>
+                            <div className="mt-1 flex items-center justify-end gap-1.5">
+                              <span className="text-[10px] text-slate-400">
+                                {format(new Date(msg.createdAt), "h:mm a")}
+                              </span>
+                              {isMe && msg.status === "PENDING_PAYMENT" && (
+                                <Lock size={10} className="text-amber-500" />
+                              )}
+                              {isMe && msg.status === "AWAITING_REPLY" && (
+                                <Lock size={10} className="text-amber-500" />
+                              )}
+                              {isMe && msg.status === "REPLIED" && (
+                                <span className="text-[10px] font-bold text-emerald-500">
+                                  ✓✓
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </main>
+
+            {/* Composer */}
+            <div
+              className="flex-shrink-0 border-t border-slate-200 bg-[#f0f2f5] px-2 pt-2 sm:px-4 sm:pb-2"
+              style={{
+                paddingBottom: `calc(0.5rem + env(safe-area-inset-bottom))`,
+                marginBottom: keyboardHeight
+                  ? `${keyboardHeight}px`
+                  : undefined,
+              }}
+            >
+              <div className="mx-auto max-w-4xl">
+                {hasPendingRequest ? (
+                  <div className="rounded-xl bg-amber-50 px-4 py-3 text-center">
+                    <p className="text-sm font-medium text-amber-800">
+                      Waiting for reply
+                    </p>
+                    <p className="mt-0.5 text-xs text-amber-600">
+                      You have an active authorization hold. You can send
+                      another message once @{creator.name} replies.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSend} className="flex items-end gap-2">
+                    <button
+                      type="button"
+                      aria-label="Attach media"
+                      className="hidden h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-white sm:flex"
+                    >
+                      <Paperclip size={20} />
+                    </button>
+                    <div className="flex min-w-0 flex-1 items-end rounded-2xl bg-white px-1 shadow-sm">
+                      <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder="Type a message"
+                        aria-label="Message"
+                        className="min-h-[44px] max-h-32 flex-1 resize-none bg-transparent px-3 py-2.5 text-[15px] outline-none"
+                        rows={1}
+                        onInput={(e) => {
+                          const target = e.target as HTMLTextAreaElement;
+                          target.style.height = "auto";
+                          target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend(e);
+                          }
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={
+                        !content.trim() || sendMessageMutation.isPending
+                      }
+                      aria-label="Send message"
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm transition active:scale-95 disabled:bg-slate-300"
+                    >
+                      {sendMessageMutation.isPending ? (
+                        <Loader2 size={19} className="animate-spin" />
+                      ) : (
+                        <Send size={18} />
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 
