@@ -7,29 +7,8 @@ import {
   X,
   SlidersHorizontal,
 } from "lucide-react";
-interface ReceivedMessage {
-  id: string;
-  content: string;
-  status:
-    | "PENDING_PAYMENT"
-    | "AWAITING_REPLY"
-    | "REPLIED"
-    | "DECLINED"
-    | "EXPIRED"
-    | "REFUNDED";
-  createdAt: string;
-  payment: { amount: number };
-}
-interface ConversationThread {
-  conversationId: string;
-  senderId: string;
-  senderName: string;
-  avatarUrl?: string | null;
-  messages: ReceivedMessage[];
-  hasPending: boolean;
-  latestTimestamp: string;
-  totalBounty: number;
-}
+
+import type { ConversationThread } from "@/types/conversation";
 interface ConversationListProps {
   conversations: ConversationThread[];
   selectedConversationId: string | null;

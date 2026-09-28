@@ -15,24 +15,15 @@ import { ChatWindow } from "@/components/CreatorDashboard/ChatWindow";
 import { ProfileView } from "@/components/CreatorDashboard/ProfileView";
 import { useSocket } from "@/components/providers/SocketProvider";
 import { useSocketEvent } from "@/hooks/useSocketEvent";
-
+import type {
+  ConversationMessage,
+  ConversationThread,
+  MessageStatus,
+  Participant,
+} from "@/types/conversation";
 // ============================================================
 // TYPES
 // ============================================================
-
-type MessageStatus =
-  | "PENDING_PAYMENT"
-  | "AWAITING_REPLY"
-  | "REPLIED"
-  | "DECLINED"
-  | "EXPIRED"
-  | "REFUNDED";
-
-interface Participant {
-  id: string;
-  name: string;
-  avatarUrl?: string | null;
-}
 
 interface ConversationSummary {
   id: string;
@@ -52,25 +43,7 @@ interface ConversationSummary {
   role: "USER" | "CREATOR";
 }
 
-interface PaidMessage {
-  id: string;
-  content: string;
-
-  status: MessageStatus;
-
-  createdAt: string;
-  expiresAt?: string;
-
-  conversationId: string;
-
-  sender: Participant;
-
-  payment?: {
-    amount: number;
-  };
-
-  replyContent?: string;
-}
+type PaidMessage = ConversationMessage;
 
 interface ChatMessage {
   id: string;
@@ -109,24 +82,6 @@ interface ConversationMessagesResponse {
     hasMore: boolean;
     nextCursor: string | null;
   };
-}
-
-interface ConversationThread {
-  conversationId: string;
-
-  senderId: string;
-  creatorId: string;
-
-  senderName: string;
-  avatarUrl?: string | null;
-
-  messages: PaidMessage[];
-
-  hasPending: boolean;
-
-  latestTimestamp: string;
-
-  totalBounty: number;
 }
 
 // ============================================================

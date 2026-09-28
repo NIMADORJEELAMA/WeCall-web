@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-
+import type {
+  ConversationMessage,
+  ConversationThread,
+} from "@/types/conversation";
 import {
   ArrowLeft,
   CheckCheck,
@@ -12,60 +15,6 @@ import {
   Reply,
   Send,
 } from "lucide-react";
-
-// ============================================================
-// TYPES
-// ============================================================
-
-interface ReceivedMessage {
-  id: string;
-
-  content: string;
-
-  replyContent?: string;
-
-  status:
-    | "PENDING_PAYMENT"
-    | "AWAITING_REPLY"
-    | "REPLIED"
-    | "DECLINED"
-    | "EXPIRED"
-    | "REFUNDED";
-
-  createdAt: string;
-
-  expiresAt?: string;
-
-  conversationId: string;
-
-  sender?: {
-    id?: string;
-    name?: string;
-    avatarUrl?: string | null;
-  };
-
-  payment: {
-    amount: number;
-  };
-}
-
-interface ConversationThread {
-  conversationId?: string;
-
-  senderId: string;
-
-  senderName: string;
-
-  avatarUrl?: string | null;
-
-  messages: ReceivedMessage[];
-
-  hasPending: boolean;
-
-  latestTimestamp: string;
-
-  totalBounty: number;
-}
 
 interface ChatWindowProps {
   activeThread: ConversationThread | undefined;
@@ -82,9 +31,9 @@ interface ChatWindowProps {
    * Optional because the creator is allowed to send a reply
    * without manually selecting a message.
    */
-  selectedReplyMessage: ReceivedMessage | undefined;
+  selectedReplyMessage: ConversationMessage | undefined;
 
-  onSelectReplyMessage: (message: ReceivedMessage | undefined) => void;
+  onSelectReplyMessage: (message: ConversationMessage | undefined) => void;
 
   /**
    * If messageId is undefined, the parent automatically chooses
@@ -239,11 +188,11 @@ export function ChatWindow({
 
         // The newly inserted older messages increase
         // scrollHeight. Preserve the user's visual position.
+        const previousScrollHeight = Number(
+          currentElement.dataset.previousScrollHeight ?? 0,
+        );
         const heightDifference =
-          currentElement.scrollHeight -
-          currentElement.dataset.previousScrollHeight
-            ? Number(currentElement.dataset.previousScrollHeight)
-            : 0;
+          currentElement.scrollHeight - previousScrollHeight;
 
         if (heightDifference > 0) {
           currentElement.scrollTop += heightDifference;
@@ -326,7 +275,7 @@ export function ChatWindow({
   // SELECT MESSAGE
   // ============================================================
 
-  const handleSelectMessage = (message: ReceivedMessage) => {
+  const handleSelectMessage = (message: ConversationMessage) => {
     onSelectReplyMessage(message);
 
     setReplyContent("");
