@@ -843,15 +843,15 @@ export default function RealTimeChatPage() {
 
   return (
     <>
-      <div className="h-[100dvh] overflow-hidden bg-[#f0f2f5] font-sans text-slate-800">
-        <div className="mx-auto flex h-full w-full max-w-[1600px] overflow-hidden bg-white shadow-xl lg:my-0 lg:h-full lg:border-x lg:border-slate-200">
+      <div className="h-[100dvh] overflow-hidden bg-slate-100 font-sans text-slate-900">
+        <div className="mx-auto flex h-full w-full max-w-[1600px] overflow-hidden bg-white shadow-2xl lg:my-0 lg:h-full lg:border-x lg:border-slate-200">
           {/* ================================================== */}
           {/* DESKTOP SIDEBAR */}
           {/* ================================================== */}
-          <aside className="hidden w-[360px] flex-shrink-0 border-r border-slate-200 bg-white md:flex md:flex-col">
-            <div className="flex h-[68px] items-center justify-between border-b border-slate-200 bg-[#f0f2f5] px-5">
+          <aside className="hidden w-[340px] flex-shrink-0 border-r border-slate-200 bg-white md:flex md:flex-col">
+            <div className="flex h-[72px] items-center justify-between border-b border-slate-200 bg-white px-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-bold">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold shadow-sm">
                   U
                 </div>
                 <div>
@@ -862,14 +862,14 @@ export default function RealTimeChatPage() {
                 </div>
               </div>
               <button
-                className="rounded-full p-2 text-slate-500 hover:bg-white"
+                className="rounded-xl p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
                 type="button"
               >
                 <MessageCircle size={20} />
               </button>
             </div>
 
-            <div className="border-b border-slate-100 bg-white p-3">
+            <div className="border-b border-slate-100 bg-white p-3.5">
               <div className="relative">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -879,7 +879,7 @@ export default function RealTimeChatPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search or start new chat"
-                  className="h-10 w-full rounded-lg bg-[#f0f2f5] pl-10 pr-3 text-sm outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="h-10 w-full rounded-xl border border-transparent bg-slate-100 pl-10 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-200 focus:bg-white focus:ring-4 focus:ring-blue-50"
                 />
               </div>
             </div>
@@ -926,7 +926,7 @@ export default function RealTimeChatPage() {
                             className="h-12 w-12 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 font-bold text-blue-700 ring-1 ring-blue-100">
                             {participant.name?.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -959,14 +959,14 @@ export default function RealTimeChatPage() {
           {/* ================================================== */}
           {/* CHAT PANEL */}
           {/* ================================================== */}
-          <section className="flex min-w-0 flex-1 flex-col bg-[#efeae2]">
+          <section className="flex min-w-0 flex-1 flex-col bg-slate-50">
             {/* Header */}
-            <header className="z-20 flex h-[68px] flex-shrink-0 items-center border-b border-slate-200 bg-[#f0f2f5] px-2 sm:px-4 shadow-sm">
+            <header className="z-20 flex h-[72px] flex-shrink-0 items-center border-b border-slate-200 bg-white px-2 shadow-sm sm:px-5">
               <button
                 type="button"
                 onClick={() => router.back()}
                 aria-label="Go back"
-                className="mr-1 flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-white md:hidden"
+                className="mr-1 flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 md:hidden"
               >
                 <ChevronLeft size={23} />
               </button>
@@ -979,7 +979,7 @@ export default function RealTimeChatPage() {
                     className="h-10 w-10 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 font-bold text-blue-700 ring-1 ring-blue-100">
                     {creator.name?.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -993,17 +993,17 @@ export default function RealTimeChatPage() {
                 <p className="text-[11px] text-emerald-600">Online</p>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  className="hidden h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-white md:flex"
+                  className="hidden h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition hover:bg-blue-50 hover:text-blue-600 md:flex"
                 >
                   <Search size={19} />
                 </button>
                 <button
                   type="button"
                   aria-label="Conversation information"
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
                 >
                   <Info size={20} />
                 </button>
@@ -1014,15 +1014,15 @@ export default function RealTimeChatPage() {
             <main
               ref={scrollRef}
               onScroll={handleScroll}
-              className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 lg:px-8"
+              className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[linear-gradient(180deg,#f8fbff_0%,#f4f7fb_100%)] px-3 py-5 sm:px-6 lg:px-8"
               style={{
                 scrollBehavior: "smooth",
                 WebkitOverflowScrolling: "touch",
               }}
             >
-              <div className="mx-auto flex max-w-4xl flex-col gap-2">
-                <div className="mx-auto mb-4 rounded-lg bg-[#fff5c4] px-3 py-2 text-center shadow-sm">
-                  <p className="text-[11px] font-medium text-amber-800">
+              <div className="mx-auto flex max-w-4xl flex-col gap-2.5">
+                <div className="mx-auto mb-4 rounded-full border border-blue-100 bg-white px-4 py-2 text-center shadow-sm">
+                  <p className="text-[11px] font-medium text-slate-500">
                     🔒 @{creator.name} charges <strong>${replyPrice}</strong>{" "}
                     per reply. Your payment is protected.
                   </p>
@@ -1051,10 +1051,10 @@ export default function RealTimeChatPage() {
                           className={`max-w-[82%] sm:max-w-[65%] lg:max-w-[60%] ${isMe ? "items-end" : "items-start"} flex flex-col`}
                         >
                           <div
-                            className={`rounded-2xl px-3.5 py-2 text-[14px] leading-relaxed shadow-sm ${isMe ? "rounded-br-sm bg-[#d9fdd3] text-slate-800" : "rounded-bl-sm bg-white text-slate-800"}`}
+                            className={`rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed shadow-sm ring-1 ${isMe ? "rounded-br-md bg-blue-600 text-white ring-blue-600" : "rounded-bl-md bg-white text-slate-800 ring-slate-200"}`}
                           >
                             {msg.replyToMessage && (
-                              <div className="mb-2 rounded-lg border-l-4 border-blue-500 bg-black/5 px-2 py-1 text-xs text-slate-500">
+                              <div className="mb-2 rounded-lg border-l-4 border-blue-400 bg-blue-50 px-2.5 py-1.5 text-xs text-slate-500">
                                 <p className="line-clamp-2">
                                   {msg.replyToMessage.content}
                                 </p>
@@ -1064,9 +1064,9 @@ export default function RealTimeChatPage() {
                               {msg.content}
                             </p>
                             <div className="mt-1 flex items-center justify-end gap-1.5">
-                              <span className="text-[10px] text-slate-400">
+                              {/* <span className={`text-[10px] ${isMe ? "text-blue-100" : "text-slate-400"}`>
                                 {format(new Date(msg.createdAt), "h:mm a")}
-                              </span>
+                              </span> */}
                               {isMe && msg.status === "PENDING_PAYMENT" && (
                                 <Lock size={10} className="text-amber-500" />
                               )}
@@ -1090,7 +1090,7 @@ export default function RealTimeChatPage() {
 
             {/* Composer */}
             <div
-              className="flex-shrink-0 border-t border-slate-200 bg-[#f0f2f5] px-2 pt-2 sm:px-4 sm:pb-2"
+              className="flex-shrink-0 border-t border-slate-200 bg-white px-2 pt-2.5 sm:px-4 sm:pb-2"
               style={{
                 paddingBottom: `calc(0.5rem + env(safe-area-inset-bottom))`,
                 marginBottom: keyboardHeight
@@ -1100,31 +1100,34 @@ export default function RealTimeChatPage() {
             >
               <div className="mx-auto max-w-4xl">
                 {hasPendingRequest ? (
-                  <div className="rounded-xl bg-amber-50 px-4 py-3 text-center">
-                    <p className="text-sm font-medium text-amber-800">
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-center">
+                    <p className="text-sm font-semibold text-blue-700">
                       Waiting for reply
                     </p>
-                    <p className="mt-0.5 text-xs text-amber-600">
+                    <p className="mt-0.5 text-xs text-blue-600">
                       You have an active authorization hold. You can send
                       another message once @{creator.name} replies.
                     </p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSend} className="flex items-end gap-2">
+                  <form
+                    onSubmit={handleSend}
+                    className="flex items-end gap-2 rounded-2xl bg-slate-100 p-1.5 ring-1 ring-slate-200"
+                  >
                     <button
                       type="button"
                       aria-label="Attach media"
-                      className="hidden h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-white sm:flex"
+                      className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-blue-600 sm:flex"
                     >
                       <Paperclip size={20} />
                     </button>
-                    <div className="flex min-w-0 flex-1 items-end rounded-2xl bg-white px-1 shadow-sm">
+                    <div className="flex min-w-0 flex-1 items-end rounded-xl bg-white px-1 shadow-sm">
                       <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="Type a message"
                         aria-label="Message"
-                        className="min-h-[44px] max-h-32 flex-1 resize-none bg-transparent px-3 py-2.5 text-[15px] outline-none"
+                        className="min-h-[42px] max-h-32 flex-1 resize-none bg-transparent px-3 py-2.5 text-[15px] outline-none placeholder:text-slate-400"
                         rows={1}
                         onInput={(e) => {
                           const target = e.target as HTMLTextAreaElement;
@@ -1145,7 +1148,7 @@ export default function RealTimeChatPage() {
                         !content.trim() || sendMessageMutation.isPending
                       }
                       aria-label="Send message"
-                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm transition active:scale-95 disabled:bg-slate-300"
+                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:bg-slate-300"
                     >
                       {sendMessageMutation.isPending ? (
                         <Loader2 size={19} className="animate-spin" />
@@ -1166,39 +1169,51 @@ export default function RealTimeChatPage() {
       {/* ====================================================== */}
 
       {clientSecret && paymentMessageId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">
-                  Complete Payment
-                </h2>
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Complete payment"
+        >
+          <div className="flex min-h-[100dvh] items-end justify-center p-2 sm:items-center sm:p-4">
+            <div className="flex max-h-[calc(100dvh-1rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-h-[calc(100dvh-2rem)]">
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5 sm:py-4">
+                <div className="min-w-0">
+                  <h2 className="text-base font-bold text-slate-900 sm:text-lg">
+                    Complete Payment
+                  </h2>
+                  <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
+                    Pay ${replyPrice} to send your message
+                  </p>
+                </div>
 
-                <p className="text-sm text-slate-500 mt-1">
-                  Pay ${replyPrice} to send your message
-                </p>
+                <button
+                  type="button"
+                  onClick={closePayment}
+                  aria-label="Close payment"
+                  className="ml-3 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+                >
+                  <X size={19} />
+                </button>
               </div>
 
-              <button
-                onClick={closePayment}
-                className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="p-5">
-              <Elements
-                stripe={stripePromise}
-                options={{
-                  clientSecret,
-                  appearance: {
-                    theme: "stripe",
-                  },
-                }}
-              >
-                <StripePaymentForm onSuccess={handlePaymentSuccess} />
-              </Elements>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
+                <Elements
+                  stripe={stripePromise}
+                  options={{
+                    clientSecret,
+                    appearance: {
+                      theme: "stripe",
+                      variables: {
+                        borderRadius: "10px",
+                        fontSizeBase: "14px",
+                      },
+                    },
+                  }}
+                >
+                  <StripePaymentForm onSuccess={handlePaymentSuccess} />
+                </Elements>
+              </div>
             </div>
           </div>
         </div>
@@ -1261,21 +1276,30 @@ function StripePaymentForm({ onSuccess }: { onSuccess: () => void }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <PaymentElement />
+    <form onSubmit={handleSubmit} className="pb-1">
+      <PaymentElement
+        options={{
+          layout: {
+            type: "accordion",
+            defaultCollapsed: false,
+            radios: "auto",
+          },
+          paymentMethodOrder: ["card", "link"],
+        }}
+      />
 
       {error && (
-        <div className="mt-4 rounded-lg bg-red-50 border border-red-100 p-3">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="mt-3 rounded-lg border border-red-100 bg-red-50 p-3">
+          <p className="text-xs text-red-600 sm:text-sm">{error}</p>
         </div>
       )}
 
       <button
         type="submit"
         disabled={!stripe || !elements || loading}
-        className="mt-5 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? "Processing Payment..." : "Pay & Send"}
+        {loading ? "Processing..." : "Pay & Send"}
       </button>
     </form>
   );
