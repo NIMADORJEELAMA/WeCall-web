@@ -843,132 +843,21 @@ export default function RealTimeChatPage() {
 
   return (
     <>
-      <div className="h-[100dvh] overflow-hidden bg-slate-100 font-sans text-slate-900">
-        <div className="mx-auto flex h-full w-full max-w-[1600px] overflow-hidden bg-white shadow-2xl lg:my-0 lg:h-full lg:border-x lg:border-slate-200">
+      <div className="h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-hidden bg-white font-sans text-slate-900">
+        <div className="flex h-full w-full min-w-0 overflow-hidden bg-white">
           {/* ================================================== */}
-          {/* DESKTOP SIDEBAR */}
+          {/* CHAT */}
           {/* ================================================== */}
-          <aside className="hidden w-[340px] flex-shrink-0 border-r border-slate-200 bg-white md:flex md:flex-col">
-            <div className="flex h-[72px] items-center justify-between border-b border-slate-200 bg-white px-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold shadow-sm">
-                  U
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">Chats</p>
-                  <p className="text-[11px] text-slate-500">
-                    Your conversations
-                  </p>
-                </div>
-              </div>
-              <button
-                className="rounded-xl p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
-                type="button"
-              >
-                <MessageCircle size={20} />
-              </button>
-            </div>
-
-            <div className="border-b border-slate-100 bg-white p-3.5">
-              <div className="relative">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={17}
-                />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search or start new chat"
-                  className="h-10 w-full rounded-xl border border-transparent bg-slate-100 pl-10 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-200 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                />
-              </div>
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              {loadingSidebar ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="animate-spin text-slate-400" size={24} />
-                </div>
-              ) : filteredSidebarConversations.length === 0 ? (
-                <div className="px-6 py-14 text-center">
-                  <MessageCircle
-                    className="mx-auto mb-3 text-slate-300"
-                    size={42}
-                  />
-                  <p className="text-sm font-semibold text-slate-700">
-                    No conversations
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Your chats will appear here.
-                  </p>
-                </div>
-              ) : (
-                filteredSidebarConversations.map((item) => {
-                  const active = item.participant?.id === creatorId;
-                  const participant = item.participant;
-                  const latest = item.latestMessage;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() =>
-                        router.push(`/dashboard/user/message/${participant.id}`)
-                      }
-                      className={`flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition ${
-                        active ? "bg-[#e9edef]" : "hover:bg-[#f5f6f6]"
-                      }`}
-                    >
-                      <div className="relative flex-shrink-0">
-                        {participant.avatarUrl ? (
-                          <img
-                            src={participant.avatarUrl}
-                            alt={participant.name}
-                            className="h-12 w-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 font-bold text-blue-700 ring-1 ring-blue-100">
-                            {participant.name?.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        {active && (
-                          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-[15px] font-semibold text-slate-900">
-                            {participant.name}
-                          </p>
-                          {latest && (
-                            <span className="flex-shrink-0 text-[10px] text-slate-400">
-                              {formatSidebarTime(latest.createdAt)}
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-1 truncate text-xs text-slate-500">
-                          {latest?.content || "Tap to start chatting"}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          </aside>
-
-          {/* ================================================== */}
-          {/* CHAT PANEL */}
-          {/* ================================================== */}
-          <section className="flex min-w-0 flex-1 flex-col bg-slate-50">
+          <section className="relative mx-auto flex min-h-0 min-w-0 w-full max-w-4xl flex-1 flex-col overflow-hidden bg-[#f5f8ff]">
             {/* Header */}
-            <header className="z-20 flex h-[72px] flex-shrink-0 items-center border-b border-slate-200 bg-white px-2 shadow-sm sm:px-5">
+            <header className="z-30 flex h-[62px] w-full min-w-0 flex-shrink-0 items-center overflow-hidden border-b border-blue-100 bg-white px-1.5 shadow-[0_1px_8px_rgba(37,99,235,0.06)] sm:h-[68px] sm:px-4">
               <button
                 type="button"
                 onClick={() => router.back()}
                 aria-label="Go back"
-                className="mr-1 flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 md:hidden"
+                className="mr-1 flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition hover:bg-blue-50 hover:text-blue-600  "
               >
-                <ChevronLeft size={23} />
+                <ChevronLeft size={24} />
               </button>
 
               <div className="relative flex-shrink-0">
@@ -976,36 +865,45 @@ export default function RealTimeChatPage() {
                   <img
                     src={creator.avatarUrl}
                     alt={creator.name}
-                    className="h-10 w-10 rounded-full object-cover"
+                    className="h-10 w-10 rounded-full object-cover ring-2 ring-blue-100 sm:h-11 sm:w-11"
                   />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 font-bold text-blue-700 ring-1 ring-blue-100">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700 sm:h-11 sm:w-11">
                     {creator.name?.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
+                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-blue-600" />
               </div>
 
-              <div className="ml-3 min-w-0 flex-1">
-                <h2 className="truncate text-[15px] font-semibold text-slate-900">
+              <div className="ml-2 min-w-0 flex-1 overflow-hidden sm:ml-3">
+                <h2 className="min-w-0 truncate text-[15px] font-bold text-slate-900 sm:text-base">
                   {creator.name}
                 </h2>
-                <p className="text-[11px] text-emerald-600">Online</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-medium text-blue-600">
+                    ${replyPrice}/reply
+                  </span>
+                  <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:block" />
+                  <span className="hidden text-[11px] text-slate-400 sm:inline">
+                    Reply guaranteed within 2 days
+                  </span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="ml-1 flex flex-shrink-0 items-center gap-0.5 sm:ml-0 sm:gap-1">
                 <button
                   type="button"
-                  className="hidden h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition hover:bg-blue-50 hover:text-blue-600 md:flex"
+                  className="hidden h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-blue-50 hover:text-blue-600 lg:flex"
+                  aria-label="Search messages"
                 >
-                  <Search size={19} />
+                  <Search size={18} />
                 </button>
                 <button
                   type="button"
                   aria-label="Conversation information"
-                  className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
                 >
-                  <Info size={20} />
+                  <Info size={19} />
                 </button>
               </div>
             </header>
@@ -1014,83 +912,162 @@ export default function RealTimeChatPage() {
             <main
               ref={scrollRef}
               onScroll={handleScroll}
-              className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[linear-gradient(180deg,#f8fbff_0%,#f4f7fb_100%)] px-3 py-5 sm:px-6 lg:px-8"
+              className="relative min-h-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-[#f5f8ff] px-2.5 py-4 sm:px-6 sm:py-6 lg:px-10"
               style={{
                 scrollBehavior: "smooth",
                 WebkitOverflowScrolling: "touch",
               }}
             >
-              <div className="mx-auto flex max-w-4xl flex-col gap-2.5">
-                <div className="mx-auto mb-4 rounded-full border border-blue-100 bg-white px-4 py-2 text-center shadow-sm">
-                  <p className="text-[11px] font-medium text-slate-500">
-                    🔒 @{creator.name} charges <strong>${replyPrice}</strong>{" "}
-                    per reply. Your payment is protected.
+              {/* Soft blue decorative shapes */}
+              <div className="pointer-events-none absolute left-[-80px] top-24 h-40 w-40 rounded-full bg-blue-100/40 blur-3xl" />
+              <div className="pointer-events-none absolute right-[-80px] top-1/2 h-48 w-48 rounded-full bg-blue-100/40 blur-3xl" />
+
+              <div className="relative mx-auto flex min-h-full w-full min-w-0 flex-col">
+                {/* Intro card */}
+                <div className="mb-5 w-full min-w-0 rounded-[24px] border border-blue-100 bg-white px-4 py-5 text-center shadow-[0_8px_30px_rgba(37,99,235,0.07)] sm:px-8 sm:py-8">
+                  <div className="mb-4 flex justify-center">
+                    <div className="relative flex items-center justify-center">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-200 sm:h-20 sm:w-20">
+                        <MessageCircle size={30} strokeWidth={2.2} />
+                      </div>
+
+                      <div className="absolute left-12 top-2 h-14 w-14 overflow-hidden rounded-full border-4 border-white bg-blue-50 shadow-md sm:left-14 sm:h-16 sm:w-16">
+                        {creator.avatarUrl ? (
+                          <img
+                            src={creator.avatarUrl}
+                            alt={creator.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-blue-100 font-bold text-blue-700">
+                            {creator.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <h1 className="text-xl font-bold tracking-tight text-slate-700 sm:text-2xl">
+                    Speak with{" "}
+                    <span className="text-slate-950">{creator.name}.</span>
+                  </h1>
+
+                  <p className="mx-auto mt-2 max-w-xl text-xs font-medium leading-5 text-slate-500 sm:text-sm sm:leading-6">
+                    Welcome to your conversation with {creator.name}! Start
+                    chatting below. Your message is sent securely and the
+                    creator&apos;s reply is protected by the payment process.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-5 py-2 text-xs font-bold text-blue-700 ring-1 ring-blue-100 transition hover:bg-blue-100"
+                  >
+                    <Info size={14} />
+                    Learn More
+                  </button>
+
+                  <div className="mt-5 space-y-1 text-[11px] font-medium text-slate-400 sm:text-xs">
+                    <p>Reply guaranteed within 2 days or your money back.</p>
+                    <p className="font-semibold text-slate-500">
+                      *Prices displayed in US dollars.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payment protection label */}
+                <div className="mx-auto mb-4 max-w-full rounded-full border border-blue-100 bg-white px-3 py-2 shadow-sm">
+                  <p className="text-[10px] font-semibold text-blue-600 sm:text-[11px]">
+                    <ShieldCheck className="mr-1 inline-block" size={13} />$
+                    {replyPrice} per reply · Secure payment
                   </p>
                 </div>
 
                 {loadingMessages ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2
-                      className="animate-spin text-slate-400"
-                      size={24}
-                    />
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="animate-spin text-blue-500" size={24} />
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="my-auto py-20 text-center text-sm text-slate-500">
-                    Send a message to start the conversation.
+                  <div className="flex flex-1 items-center justify-center py-16 text-center">
+                    <div>
+                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+                        <MessageCircle size={22} />
+                      </div>
+                      <p className="text-sm font-semibold text-slate-600">
+                        Start the conversation
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Send your first message below.
+                      </p>
+                    </div>
                   </div>
                 ) : (
-                  messages.map((msg, idx) => {
-                    const isMe = msg.senderId === conversationData?.userId;
-                    return (
-                      <div
-                        key={msg.id || idx}
-                        className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}
-                      >
+                  <div className="flex flex-col gap-2.5 pb-2">
+                    {messages.map((msg, idx) => {
+                      const isMe = msg.senderId === conversationData?.userId;
+
+                      return (
                         <div
-                          className={`max-w-[82%] sm:max-w-[65%] lg:max-w-[60%] ${isMe ? "items-end" : "items-start"} flex flex-col`}
+                          key={msg.id || idx}
+                          className={`flex w-full ${
+                            isMe ? "justify-end" : "justify-start"
+                          }`}
                         >
                           <div
-                            className={`rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed shadow-sm ring-1 ${isMe ? "rounded-br-md bg-blue-600 text-white ring-blue-600" : "rounded-bl-md bg-white text-slate-800 ring-slate-200"}`}
+                            className={`flex max-w-[88%] flex-col ${
+                              isMe ? "items-end" : "items-start"
+                            } sm:max-w-[72%]`}
                           >
-                            {msg.replyToMessage && (
-                              <div className="mb-2 rounded-lg border-l-4 border-blue-400 bg-blue-50 px-2.5 py-1.5 text-xs text-slate-500">
-                                <p className="line-clamp-2">
-                                  {msg.replyToMessage.content}
-                                </p>
+                            <div
+                              className={`rounded-[20px] px-4 py-3 text-[14px] leading-relaxed shadow-sm ${
+                                isMe
+                                  ? "rounded-br-md bg-blue-600 text-white shadow-blue-100"
+                                  : "rounded-bl-md border border-blue-100 bg-white text-slate-800 shadow-blue-50"
+                              }`}
+                            >
+                              {msg.replyToMessage && (
+                                <div
+                                  className={`mb-2 rounded-xl border-l-4 px-3 py-2 text-xs ${
+                                    isMe
+                                      ? "border-blue-200 bg-blue-500/60 text-blue-50"
+                                      : "border-blue-500 bg-blue-50 text-slate-500"
+                                  }`}
+                                >
+                                  <p className="line-clamp-2">
+                                    {msg.replyToMessage.content}
+                                  </p>
+                                </div>
+                              )}
+
+                              <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                                {msg.content}
+                              </p>
+
+                              <div className="mt-1 flex items-center justify-end gap-1.5">
+                                {isMe && msg.status === "PENDING_PAYMENT" && (
+                                  <Lock size={10} className="text-blue-100" />
+                                )}
+                                {isMe && msg.status === "AWAITING_REPLY" && (
+                                  <Lock size={10} className="text-blue-100" />
+                                )}
+                                {isMe && msg.status === "REPLIED" && (
+                                  <span className="text-[10px] font-bold text-blue-100">
+                                    ✓✓
+                                  </span>
+                                )}
                               </div>
-                            )}
-                            <p className="whitespace-pre-wrap break-words">
-                              {msg.content}
-                            </p>
-                            <div className="mt-1 flex items-center justify-end gap-1.5">
-                              {/* <span className={`text-[10px] ${isMe ? "text-blue-100" : "text-slate-400"}`>
-                                {format(new Date(msg.createdAt), "h:mm a")}
-                              </span> */}
-                              {isMe && msg.status === "PENDING_PAYMENT" && (
-                                <Lock size={10} className="text-amber-500" />
-                              )}
-                              {isMe && msg.status === "AWAITING_REPLY" && (
-                                <Lock size={10} className="text-amber-500" />
-                              )}
-                              {isMe && msg.status === "REPLIED" && (
-                                <span className="text-[10px] font-bold text-emerald-500">
-                                  ✓✓
-                                </span>
-                              )}
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </main>
 
             {/* Composer */}
             <div
-              className="flex-shrink-0 border-t border-slate-200 bg-white px-2 pt-2.5 sm:px-4 sm:pb-2"
+              className="z-20 w-full min-w-0 flex-shrink-0 overflow-x-hidden border-t border-blue-100 bg-white px-1.5 pt-2 sm:px-4 sm:pb-2"
               style={{
                 paddingBottom: `calc(0.5rem + env(safe-area-inset-bottom))`,
                 marginBottom: keyboardHeight
@@ -1098,10 +1075,19 @@ export default function RealTimeChatPage() {
                   : undefined,
               }}
             >
-              <div className="mx-auto max-w-4xl">
+              <div className="mx-auto w-full min-w-0">
+                <div className="mb-1 flex items-center justify-between px-1.5">
+                  <span className="text-[10px] font-semibold text-blue-600 sm:text-[11px]">
+                    ${replyPrice} per 900 characters
+                  </span>
+                  <span className="text-[10px] font-semibold text-slate-400 sm:text-[11px]">
+                    {content.length}
+                  </span>
+                </div>
+
                 {hasPendingRequest ? (
-                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-center">
-                    <p className="text-sm font-semibold text-blue-700">
+                  <div className="w-full min-w-0 rounded-2xl border border-blue-100 bg-blue-50 px-3 py-3 text-center sm:px-4">
+                    <p className="text-sm font-bold text-blue-700">
                       Waiting for reply
                     </p>
                     <p className="mt-0.5 text-xs text-blue-600">
@@ -1112,27 +1098,31 @@ export default function RealTimeChatPage() {
                 ) : (
                   <form
                     onSubmit={handleSend}
-                    className="flex items-end gap-2 rounded-2xl bg-slate-100 p-1.5 ring-1 ring-slate-200"
+                    className="flex w-full min-w-0 items-end gap-1.5 rounded-[18px] border border-blue-100 bg-[#f6f9ff] p-1.5 shadow-[0_4px_18px_rgba(37,99,235,0.08)] sm:gap-2"
                   >
                     <button
                       type="button"
                       aria-label="Attach media"
                       className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-blue-600 sm:flex"
                     >
-                      <Paperclip size={20} />
+                      <Paperclip size={19} />
                     </button>
-                    <div className="flex min-w-0 flex-1 items-end rounded-xl bg-white px-1 shadow-sm">
+
+                    <div className="flex min-w-0 flex-1 items-end overflow-hidden rounded-xl bg-white px-1 shadow-sm ring-1 ring-blue-50">
                       <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        placeholder="Type a message"
+                        placeholder="Write your message..."
                         aria-label="Message"
-                        className="min-h-[42px] max-h-32 flex-1 resize-none bg-transparent px-3 py-2.5 text-[15px] outline-none placeholder:text-slate-400"
+                        className="min-h-[42px] max-h-32 min-w-0 w-full flex-1 resize-none overflow-y-auto bg-transparent px-3 py-2.5 text-[15px] text-slate-800 outline-none placeholder:text-slate-400"
                         rows={1}
                         onInput={(e) => {
                           const target = e.target as HTMLTextAreaElement;
                           target.style.height = "auto";
-                          target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
+                          target.style.height = `${Math.min(
+                            target.scrollHeight,
+                            128,
+                          )}px`;
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
@@ -1142,18 +1132,24 @@ export default function RealTimeChatPage() {
                         }}
                       />
                     </div>
+
                     <button
                       type="submit"
                       disabled={
                         !content.trim() || sendMessageMutation.isPending
                       }
                       aria-label="Send message"
-                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:bg-slate-300"
+                      className="flex h-10 min-w-10 flex-shrink-0 items-center justify-center gap-1 rounded-xl bg-blue-600 px-2.5 text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:bg-blue-200 sm:min-w-[74px] sm:gap-1.5 sm:px-3"
                     >
                       {sendMessageMutation.isPending ? (
-                        <Loader2 size={19} className="animate-spin" />
+                        <Loader2 size={18} className="animate-spin" />
                       ) : (
-                        <Send size={18} />
+                        <>
+                          <span className="hidden text-xs font-bold sm:inline">
+                            ${replyPrice}
+                          </span>
+                          <Send size={17} />
+                        </>
                       )}
                     </button>
                   </form>
@@ -1170,20 +1166,25 @@ export default function RealTimeChatPage() {
 
       {clientSecret && paymentMessageId && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-50 w-full max-w-full overflow-x-hidden overflow-y-auto bg-blue-950/40 p-0 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label="Complete payment"
         >
-          <div className="flex min-h-[100dvh] items-end justify-center p-2 sm:items-center sm:p-4">
-            <div className="flex max-h-[calc(100dvh-1rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-h-[calc(100dvh-2rem)]">
-              <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5 sm:py-4">
+          <div className="flex min-h-[100dvh] w-full max-w-full items-end justify-center sm:items-center sm:p-4">
+            <div className="flex max-h-[100dvh] w-full min-w-0 max-w-md flex-col overflow-hidden rounded-t-[24px] border border-blue-100 bg-white shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-[24px]">
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-blue-100 px-4 py-3.5 sm:px-5 sm:py-4">
                 <div className="min-w-0">
-                  <h2 className="text-base font-bold text-slate-900 sm:text-lg">
-                    Complete Payment
-                  </h2>
-                  <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
-                    Pay ${replyPrice} to send your message
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                      <ShieldCheck size={17} />
+                    </div>
+                    <h2 className="text-base font-bold text-slate-900 sm:text-lg">
+                      Complete Payment
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500 sm:ml-10 sm:text-sm">
+                    Pay ${replyPrice} securely to send your message
                   </p>
                 </div>
 
@@ -1191,13 +1192,13 @@ export default function RealTimeChatPage() {
                   type="button"
                   onClick={closePayment}
                   aria-label="Close payment"
-                  className="ml-3 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+                  className="ml-3 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-50 text-slate-500 transition hover:bg-blue-100 hover:text-blue-700"
                 >
-                  <X size={19} />
+                  <X size={18} />
                 </button>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
+              <div className="min-h-0 w-full min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-3 py-4 sm:px-5 sm:py-5">
                 <Elements
                   stripe={stripePromise}
                   options={{
@@ -1207,6 +1208,7 @@ export default function RealTimeChatPage() {
                       variables: {
                         borderRadius: "10px",
                         fontSizeBase: "14px",
+                        colorPrimary: "#2563eb",
                       },
                     },
                   }}
