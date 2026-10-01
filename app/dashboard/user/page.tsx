@@ -133,22 +133,23 @@ export default function UserDashboard() {
               type="button"
               onClick={() => setActiveView("chats")}
               aria-label="Open chats"
-              className="grid h-12 w-12 place-items-center rounded-2xl text-[#5D6B8A] transition active:scale-95 hover:bg-[#EEF4FF] hover:text-[#070D3B]"
+              className="grid h-8 w-8 place-items-center rounded-2xl text-[#5D6B8A] transition active:scale-95 hover:bg-[#EEF4FF] hover:text-[#070D3B]"
             >
-              <LogOut size={35} strokeWidth={2.1} className="rotate-180" />
+              <LogOut size={28} strokeWidth={2.1} className="rotate-180" />
             </button>
 
             <button
               type="button"
               onClick={() => setActiveView("chats")}
-              className="flex items-center gap-2.5 rounded-full px-2 py-1.5"
-              aria-label="Popcall home"
+              className="flex items-center gap-2 rounded-full px-2 py-1.5"
+              aria-label="Wecall home"
             >
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-[#0B3B91] text-white shadow-[0_8px_30px_rgba(11,59,145,0.18)]">
-                <Sparkles size={22} strokeWidth={2.4} fill="currentColor" />
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-[#0B3B91] text-white shadow-[0_8px_30px_rgba(11,59,145,0.18)]">
+                <Sparkles size={18} strokeWidth={2.4} fill="currentColor" />
               </span>
-              <span className="text-[29px] font-bold tracking-[-0.04em] leading-none text-[#070D3B]">
-                Popcall
+
+              <span className="text-[22px] font-bold tracking-[-0.04em] leading-none text-[#070D3B]">
+                Wecall
               </span>
             </button>
 
@@ -156,9 +157,9 @@ export default function UserDashboard() {
               type="button"
               onClick={() => setActiveView("profile")}
               aria-label="Open profile"
-              className="grid h-12 w-12 place-items-center rounded-2xl text-[#5D6B8A] transition active:scale-95 hover:bg-[#EEF4FF] hover:text-[#070D3B]"
+              className="grid h-8 w-8 place-items-center rounded-2xl text-[#5D6B8A] transition active:scale-95 hover:bg-[#EEF4FF] hover:text-[#070D3B]"
             >
-              <Settings size={34} strokeWidth={2.1} />
+              <Settings size={28} strokeWidth={2.1} />
             </button>
           </header>
 
@@ -169,10 +170,10 @@ export default function UserDashboard() {
               {/* ================================================= */}
               <section className="rounded-[25px] border border-[#D9E6FF] bg-gradient-to-br from-[#EAF2FF] to-[#DCEAFF] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_18px_45px_rgba(7,13,59,0.08)] sm:px-6 sm:py-5">
                 <div className="flex items-center gap-4">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#0B3B91] text-white shadow-lg">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#0B3B91] text-white shadow-lg">
                     <Sparkles size={21} strokeWidth={2.4} fill="currentColor" />
                   </span>
-                  <p className="max-w-xl text-[16px] leading-[1.45] text-[#52627F] sm:text-[17px]">
+                  <p className="max-w-xl text-[14px] leading-[1.45] text-[#52627F] sm:text-[17px]">
                     Welcome to your homepage, where you can see your{" "}
                     <span className="font-semibold text-[#0B3B91]">chats</span>,
                     find creators and see FAQs.
@@ -185,7 +186,7 @@ export default function UserDashboard() {
               {/* ================================================= */}
               <section>
                 <div className="mb-4 flex items-center justify-between gap-3">
-                  <h2 className="text-[22px] font-medium tracking-[-0.02em] text-[#60708E]">
+                  <h2 className="text-[18px] font-medium tracking-[-0.02em] text-[#60708E]">
                     Inbox
                   </h2>
 
@@ -198,9 +199,9 @@ export default function UserDashboard() {
                     aria-label={
                       searchOpen ? "Close chat search" : "Search chats"
                     }
-                    className="grid h-11 w-11 place-items-center rounded-full bg-[#F0F5FF] text-[#425271] transition active:scale-95 hover:bg-[#E7F0FF] hover:text-[#0B3B91]"
+                    className="grid h-8 w-8 place-items-center rounded-full bg-[#F0F5FF] text-[#425271] transition active:scale-95 hover:bg-[#E7F0FF] hover:text-[#0B3B91]"
                   >
-                    {searchOpen ? <X size={21} /> : <Search size={21} />}
+                    {searchOpen ? <X size={18} /> : <Search size={18} />}
                   </button>
                 </div>
 
@@ -215,7 +216,6 @@ export default function UserDashboard() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search chats..."
-                      autoFocus
                       className="h-12 w-full rounded-2xl border border-[#D9E6FF] bg-[#F8FBFF] pl-11 pr-4 text-sm text-[#17305F] outline-none placeholder:text-[#9AA6BA] focus:border-[#AFC7F5] focus:bg-white"
                     />
                   </div>
@@ -257,17 +257,17 @@ export default function UserDashboard() {
                         <Link
                           key={conversation.id}
                           href={`/dashboard/user/message/${participant.id}`}
-                          className="group flex items-center gap-4 border-b border-[#DCE6F7] px-0 py-5 last:border-b-0 sm:px-2"
+                          className="group flex items-center gap-4 border-b border-[#DCE6F7] px-0 py-4 last:border-b-0 sm:px-2"
                         >
                           <div className="relative shrink-0">
                             {participant.avatarUrl ? (
                               <img
                                 src={participant.avatarUrl}
                                 alt={participant.name}
-                                className="h-16 w-16 rounded-full object-cover ring-2 ring-[#BFD6FF]"
+                                className="h-12 w-12 rounded-full object-cover ring-2 ring-[#BFD6FF]"
                               />
                             ) : (
-                              <div className="grid h-16 w-16 place-items-center rounded-full bg-[#DCE8FB] text-lg font-semibold text-[#0B3B91]">
+                              <div className="grid h-12 w-12 place-items-center rounded-full bg-[#DCE8FB] text-lg font-semibold text-[#0B3B91]">
                                 {participant.name?.charAt(0).toUpperCase()}
                               </div>
                             )}
@@ -275,24 +275,24 @@ export default function UserDashboard() {
 
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-3">
-                              <h3 className="truncate text-[20px] font-semibold text-[#0B3B91]">
+                              <h3 className="truncate text-[18px] font-semibold text-[#0B3B91]">
                                 {participant.name}
                               </h3>
 
                               {latest && (
-                                <span className="shrink-0 text-[14px] font-medium text-[#8693AA]">
+                                <span className="shrink-0 text-[12px] font-medium text-[#8693AA]">
                                   {formatMessageTime(latest.createdAt)}
                                 </span>
                               )}
                             </div>
 
-                            <p className="mt-1 truncate text-[17px] italic text-[#7B89A4]">
+                            <p className="mt-1 truncate text-[15px] italic text-[#7B89A4]">
                               {latest ? latest.content : "No messages here."}
                             </p>
                           </div>
 
                           <ChevronRight
-                            size={30}
+                            size={26}
                             strokeWidth={2}
                             className="shrink-0 text-[#7B89A4] transition-transform group-hover:translate-x-0.5"
                           />
@@ -315,14 +315,14 @@ export default function UserDashboard() {
                   {FAQS.map((question) => (
                     <div
                       key={question}
-                      className="flex min-h-[74px] items-center justify-between gap-4 rounded-[22px] border border-[#DFE9F8] bg-gradient-to-b from-[#F1F6FF] to-[#E8F0FF] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] sm:px-5"
+                      className="flex min-h-[40px] items-center justify-between gap-4 rounded-[22px] border border-[#DFE9F8] bg-gradient-to-b from-[#F1F6FF] to-[#E8F0FF] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] sm:px-5"
                     >
                       <span className="text-[18px] leading-[1.28] text-[#17305F] sm:text-[19px]">
                         {question}
                       </span>
 
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#0B3B91] text-white">
-                        <Plus size={23} strokeWidth={2.5} />
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#0B3B91] text-white">
+                        <Plus size={16} strokeWidth={2.5} />
                       </span>
                     </div>
                   ))}

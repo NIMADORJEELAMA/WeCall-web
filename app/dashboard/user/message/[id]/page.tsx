@@ -1117,7 +1117,8 @@ export default function RealTimeChatPage() {
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="Write your message..."
                         aria-label="Message"
-                        className="min-h-[42px] max-h-32 min-w-0 w-full flex-1 resize-none overflow-y-auto bg-transparent px-3 py-2.5 text-[15px] text-[#17305F] outline-none placeholder:text-[#8693AA]"
+                        className="min-h-[42px] max-h-32 min-w-0 w-full flex-1 resize-none overflow-y-auto bg-transparent px-3 py-2.5 text-base text-[#17305F] outline-none placeholder:text-[#8693AA]"
+                        style={{ fontSize: "16px" }}
                         rows={1}
                         onInput={(e) => {
                           const target = e.target as HTMLTextAreaElement;
