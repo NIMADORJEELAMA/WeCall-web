@@ -708,8 +708,8 @@ export default function CreatorDashboard() {
 
   if (activeTab === "profile") {
     return (
-      <div className="mx-auto max-w-6xl font-sans text-slate-800 md:p-8">
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl">
+      <div className="fixed inset-0 h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-white font-sans text-[#070D3B]">
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col overflow-hidden bg-white">
           <ProfileView />
         </div>
       </div>
@@ -721,38 +721,39 @@ export default function CreatorDashboard() {
   // ============================================================
 
   return (
-    <div className="mx-auto max-w-6xl font-sans text-slate-800 md:p-8">
-      <div className="relative grid grid-cols-1 overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl md:grid-cols-12">
-        <ConversationList
-          conversations={conversations}
-          selectedConversationId={selectedConversationId}
-          onSelectConversation={handleSelectConversation}
-          isLoading={conversationsLoading}
-        />
-
-        <ChatWindow
-          activeThread={
-            activeThread
-              ? {
-                  ...activeThread,
-                  messages: displayMessages,
-                }
-              : undefined
-          }
-          selectedConversationId={selectedConversationId}
-          replyContent={replyContent}
-          setReplyContent={setReplyContent}
-          selectedReplyMessage={selectedReplyMessage}
-          onSelectReplyMessage={handleSelectReplyMessage}
-          onSendReply={handleSendReply}
-          isSendingReply={replyMutation.isPending}
-          onBack={handleLeaveConversation}
-          // New pagination props.
-          isLoadingMessages={chatLoading}
-          isLoadingOlderMessages={isFetchingNextPage}
-          hasOlderMessages={!!hasNextPage}
-          onLoadOlderMessages={handleLoadOlderMessages}
-        />
+    <div className="fixed inset-0 h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-white font-sans text-[#070D3B]">
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col overflow-hidden bg-white">
+        {!selectedConversationId ? (
+          <ConversationList
+            conversations={conversations}
+            selectedConversationId={selectedConversationId}
+            onSelectConversation={handleSelectConversation}
+            isLoading={conversationsLoading}
+          />
+        ) : (
+          <ChatWindow
+            activeThread={
+              activeThread
+                ? {
+                    ...activeThread,
+                    messages: displayMessages,
+                  }
+                : undefined
+            }
+            selectedConversationId={selectedConversationId}
+            replyContent={replyContent}
+            setReplyContent={setReplyContent}
+            selectedReplyMessage={selectedReplyMessage}
+            onSelectReplyMessage={handleSelectReplyMessage}
+            onSendReply={handleSendReply}
+            isSendingReply={replyMutation.isPending}
+            onBack={handleLeaveConversation}
+            isLoadingMessages={chatLoading}
+            isLoadingOlderMessages={isFetchingNextPage}
+            hasOlderMessages={!!hasNextPage}
+            onLoadOlderMessages={handleLoadOlderMessages}
+          />
+        )}
       </div>
     </div>
   );
