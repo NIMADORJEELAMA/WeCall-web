@@ -31,11 +31,12 @@ export default function DashboardLayout({
 
         {/* <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} /> */}
         {/* <Sidebar /> */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* <Navbar onMenuClick={() => setMobileOpen((prev) => !prev)} /> */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-0">
-            {children}
-          </main>
+        <div className="fixed inset-0 h-[100dvh]   overflow-hidden">
+          <div className="flex h-full min-h-0   overflow-hidden">
+            <main className="flex min-h-0 flex-1 overflow-hidden p-0">
+              {children}
+            </main>
+          </div>
         </div>
       </div>
     </ProtectedRoute>

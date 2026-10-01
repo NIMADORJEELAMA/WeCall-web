@@ -1,18 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Search,
-  User as UserIcon,
+  ChevronRight,
+  LogOut,
   MessageCircle,
+  Plus,
+  Search,
+  Settings,
   ShieldCheck,
+  Sparkles,
+  User as UserIcon,
+  X,
 } from "lucide-react";
-import api from "@/lib/axios";
 import Link from "next/link";
 
+import api from "@/lib/axios";
 import LogoutButton from "@/components/Buttons/LogoutButton";
 import BottomTabBar from "@/components/Navigation/BottomTabBar";
+
 interface Conversation {
   id: string;
   conversationId: string;
@@ -34,9 +41,19 @@ interface Conversation {
   role: "USER" | "CREATOR";
 }
 
+const FAQS = [
+  "How does Popcall work?",
+  "How are messages charged?",
+  "How does the price change if I send long messages?",
+  "What if a creator sends me back-to-back replies?",
+  "How are video calls charged?",
+  "What does the message status mean?",
+];
+
 export default function UserDashboard() {
   const [activeView, setActiveView] = useState<"chats" | "profile">("chats");
   const [localUser, setLocalUser] = useState<any>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   function formatMessageTime(date: string) {
@@ -90,177 +107,310 @@ export default function UserDashboard() {
   const { data: conversations = [], isLoading: loadingConversations } =
     useQuery<Conversation[]>({
       queryKey: ["my-conversations"],
-
       queryFn: async () => {
         const res = await api.get("/messages/my-conversations");
         return res.data;
       },
     });
 
-  /*
-   * Backend returns:
-   *
-   * participant: {
-   *   id,
-   *   name,
-   *   avatarUrl
-   * }
-   *
-   * So DON'T use c.creator here.
-   */
   const filteredConversations = conversations.filter((conversation) =>
     conversation.participant.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase()),
   );
 
+  const showHome = activeView === "chats";
+
   return (
-    <div className="min-h-[100dvh] bg-slate-50 font-sans text-slate-800">
-      <main className="mx-auto min-h-[100dvh] w-full max-w-2xl overflow-x-hidden px-4 pb-24 md:px-6">
-        {/* Top Header */}
-        <header className="mb-6 border-b border-slate-200/60 pb-4 mt-2">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            {activeView === "chats" && "Chats"}
-            {activeView === "profile" && "Profile"}
-          </h1>
-        </header>
+    <div className="fixed inset-0 h-[100dvh] w-full overflow-hidden bg-white font-sans text-[#070D3B]">
+      <main className="h-full min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain px-5 pb-28 pt-[calc(1rem+env(safe-area-inset-top))] sm:px-6 md:px-8">
+        <div className="mx-auto w-full max-w-2xl">
+          {/* ===================================================== */}
+          {/* BRAND HEADER */}
+          {/* ===================================================== */}
+          <header className="flex items-center justify-between pb-7 pt-1 sm:pb-8">
+            <button
+              type="button"
+              onClick={() => setActiveView("chats")}
+              aria-label="Open chats"
+              className="grid h-12 w-12 place-items-center rounded-2xl text-[#5D6B8A] transition active:scale-95 hover:bg-[#EEF4FF] hover:text-[#070D3B]"
+            >
+              <LogOut size={35} strokeWidth={2.1} className="rotate-180" />
+            </button>
 
-        {/* ========================================================= */}
-        {/* CHATS */}
-        {/* ========================================================= */}
+            <button
+              type="button"
+              onClick={() => setActiveView("chats")}
+              className="flex items-center gap-2.5 rounded-full px-2 py-1.5"
+              aria-label="Popcall home"
+            >
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-[#0B3B91] text-white shadow-[0_8px_30px_rgba(11,59,145,0.18)]">
+                <Sparkles size={22} strokeWidth={2.4} fill="currentColor" />
+              </span>
+              <span className="text-[29px] font-bold tracking-[-0.04em] leading-none text-[#070D3B]">
+                Popcall
+              </span>
+            </button>
 
-        {activeView === "chats" && (
-          <div className="animate-in fade-in duration-300">
-            {/* Search */}
-            <div className="relative mb-4">
-              <Search
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                size={18}
-              />
+            <button
+              type="button"
+              onClick={() => setActiveView("profile")}
+              aria-label="Open profile"
+              className="grid h-12 w-12 place-items-center rounded-2xl text-[#5D6B8A] transition active:scale-95 hover:bg-[#EEF4FF] hover:text-[#070D3B]"
+            >
+              <Settings size={34} strokeWidth={2.1} />
+            </button>
+          </header>
 
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search chats..."
-                className="w-full bg-slate-100/70 border border-slate-200/80 rounded-2xl h-11 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all"
-              />
-            </div>
+          {showHome ? (
+            <div className="space-y-9 pb-2">
+              {/* ================================================= */}
+              {/* WELCOME CARD */}
+              {/* ================================================= */}
+              <section className="rounded-[25px] border border-[#D9E6FF] bg-gradient-to-br from-[#EAF2FF] to-[#DCEAFF] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_18px_45px_rgba(7,13,59,0.08)] sm:px-6 sm:py-5">
+                <div className="flex items-center gap-4">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#0B3B91] text-white shadow-lg">
+                    <Sparkles size={21} strokeWidth={2.4} fill="currentColor" />
+                  </span>
+                  <p className="max-w-xl text-[16px] leading-[1.45] text-[#52627F] sm:text-[17px]">
+                    Welcome to your homepage, where you can see your{" "}
+                    <span className="font-semibold text-[#0B3B91]">chats</span>,
+                    find creators and see FAQs.
+                  </p>
+                </div>
+              </section>
 
-            {/* Loading */}
-            {loadingConversations ? (
-              <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900" />
-              </div>
-            ) : filteredConversations.length === 0 ? (
-              /* Empty State */
-              <div className="text-center py-20">
-                <MessageCircle className="mx-auto h-12 w-12 text-slate-300 mb-3 stroke-[1.5]" />
+              {/* ================================================= */}
+              {/* INBOX */}
+              {/* ================================================= */}
+              <section>
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h2 className="text-[22px] font-medium tracking-[-0.02em] text-[#60708E]">
+                    Inbox
+                  </h2>
 
-                <h3 className="text-base font-semibold text-slate-900">
-                  No chats yet
-                </h3>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Your active conversations will appear here.
-                </p>
-              </div>
-            ) : (
-              /* Conversation List */
-              <div className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm divide-y divide-slate-100">
-                {filteredConversations.map((conversation) => {
-                  // IMPORTANT:
-                  // Backend returns participant, not creator.
-                  const participant = conversation.participant;
-                  const latest = conversation.latestMessage;
-
-                  return (
-                    <Link
-                      key={conversation.id}
-                      href={`/dashboard/user/message/${participant.id}`}
-                      className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-slate-50/80 transition-colors"
-                    >
-                      {/* Avatar */}
-                      <div className="relative shrink-0">
-                        {participant.avatarUrl ? (
-                          <img
-                            src={participant.avatarUrl}
-                            alt={participant.name}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-white font-semibold text-base">
-                            {participant.name?.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Chat Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 mb-0.5">
-                          <h3 className="font-semibold text-slate-900 text-sm truncate">
-                            {participant.name}
-                          </h3>
-
-                          {latest && (
-                            <span className="text-[11px] text-slate-400 shrink-0 font-medium">
-                              {formatMessageTime(latest.createdAt)}
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="text-xs text-slate-500 truncate">
-                          {latest ? latest.content : "Tap to start chatting"}
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* PROFILE */}
-        {/* ========================================================= */}
-
-        {activeView === "profile" && (
-          <div className="animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm">
-              <div className="flex flex-col items-center text-center mb-6 pb-6 border-b border-slate-100">
-                <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-sm mb-3">
-                  {localUser?.name?.charAt(0).toUpperCase() || "U"}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchOpen((value) => !value);
+                      if (searchOpen) setSearchQuery("");
+                    }}
+                    aria-label={
+                      searchOpen ? "Close chat search" : "Search chats"
+                    }
+                    className="grid h-11 w-11 place-items-center rounded-full bg-[#F0F5FF] text-[#425271] transition active:scale-95 hover:bg-[#E7F0FF] hover:text-[#0B3B91]"
+                  >
+                    {searchOpen ? <X size={21} /> : <Search size={21} />}
+                  </button>
                 </div>
 
-                <h2 className="text-lg font-bold text-slate-900">
-                  {localUser?.name || "User"}
+                {searchOpen && (
+                  <div className="relative mb-4">
+                    <Search
+                      size={18}
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7B89A4]"
+                    />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search chats..."
+                      autoFocus
+                      className="h-12 w-full rounded-2xl border border-[#D9E6FF] bg-[#F8FBFF] pl-11 pr-4 text-sm text-[#17305F] outline-none placeholder:text-[#9AA6BA] focus:border-[#AFC7F5] focus:bg-white"
+                    />
+                  </div>
+                )}
+
+                {loadingConversations ? (
+                  <div className="flex justify-center py-16">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D9E6FF] border-t-[#0B3B91]" />
+                  </div>
+                ) : filteredConversations.length === 0 ? (
+                  <div className="border-y border-[#DCE6F7] py-8">
+                    <div className="flex items-center justify-between gap-4 px-1 sm:px-2">
+                      <div className="flex min-w-0 items-center gap-4">
+                        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full border border-[#D9E6FF] bg-[#EDF4FF] text-[#6580A8]">
+                          <MessageCircle size={25} strokeWidth={1.7} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[19px] font-semibold text-[#0B3B91]">
+                            No chats yet
+                          </p>
+                          <p className="mt-1 text-[16px] italic text-[#7B89A4]">
+                            No messages here.
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight
+                        className="shrink-0 text-[#B1BCD0]"
+                        size={30}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-y border-[#DCE6F7]">
+                    {filteredConversations.map((conversation) => {
+                      const participant = conversation.participant;
+                      const latest = conversation.latestMessage;
+
+                      return (
+                        <Link
+                          key={conversation.id}
+                          href={`/dashboard/user/message/${participant.id}`}
+                          className="group flex items-center gap-4 border-b border-[#DCE6F7] px-0 py-5 last:border-b-0 sm:px-2"
+                        >
+                          <div className="relative shrink-0">
+                            {participant.avatarUrl ? (
+                              <img
+                                src={participant.avatarUrl}
+                                alt={participant.name}
+                                className="h-16 w-16 rounded-full object-cover ring-2 ring-[#BFD6FF]"
+                              />
+                            ) : (
+                              <div className="grid h-16 w-16 place-items-center rounded-full bg-[#DCE8FB] text-lg font-semibold text-[#0B3B91]">
+                                {participant.name?.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-3">
+                              <h3 className="truncate text-[20px] font-semibold text-[#0B3B91]">
+                                {participant.name}
+                              </h3>
+
+                              {latest && (
+                                <span className="shrink-0 text-[14px] font-medium text-[#8693AA]">
+                                  {formatMessageTime(latest.createdAt)}
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="mt-1 truncate text-[17px] italic text-[#7B89A4]">
+                              {latest ? latest.content : "No messages here."}
+                            </p>
+                          </div>
+
+                          <ChevronRight
+                            size={30}
+                            strokeWidth={2}
+                            className="shrink-0 text-[#7B89A4] transition-transform group-hover:translate-x-0.5"
+                          />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+
+              {/* ================================================= */}
+              {/* FAQ */}
+              {/* ================================================= */}
+              <section className="pb-6">
+                <h2 className="mb-5 text-[22px] font-medium tracking-[-0.02em] text-[#60708E]">
+                  FAQ
                 </h2>
 
-                <p className="text-slate-500 text-xs mt-0.5">
-                  {localUser?.email}
-                </p>
+                <div className="space-y-3">
+                  {FAQS.map((question) => (
+                    <div
+                      key={question}
+                      className="flex min-h-[74px] items-center justify-between gap-4 rounded-[22px] border border-[#DFE9F8] bg-gradient-to-b from-[#F1F6FF] to-[#E8F0FF] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] sm:px-5"
+                    >
+                      <span className="text-[18px] leading-[1.28] text-[#17305F] sm:text-[19px]">
+                        {question}
+                      </span>
 
-                <div className="flex items-center gap-1 mt-3 text-xs font-medium text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
-                  <ShieldCheck size={14} />
-                  Fan Account
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#0B3B91] text-white">
+                        <Plus size={23} strokeWidth={2.5} />
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          ) : (
+            /* =================================================== */
+            /* PROFILE */
+            /* =================================================== */
+            <section className="pb-8">
+              <div className="mb-6 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveView("chats")}
+                  className="grid h-11 w-11 place-items-center rounded-full bg-white/5 text-[#52627F] transition active:scale-95 hover:bg-[#E7F0FF]"
+                  aria-label="Back to chats"
+                >
+                  <ChevronRight size={22} className="rotate-180" />
+                </button>
+                <div>
+                  <p className="text-sm text-[#7B89A4]">Account</p>
+                  <h2 className="text-2xl font-semibold">Profile</h2>
                 </div>
               </div>
 
-              <LogoutButton className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 px-4 py-3 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed" />
-            </div>
-          </div>
-        )}
+              <div className="rounded-[28px] border border-[#D9E6FF] bg-[#F7FAFF] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_18px_45px_rgba(7,13,59,0.06)] sm:p-7">
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-4 grid h-24 w-24 place-items-center rounded-full bg-[#0B3B91] text-3xl font-bold text-white shadow-xl">
+                    {localUser?.name?.charAt(0).toUpperCase() || "U"}
+                  </div>
+
+                  <h3 className="text-2xl font-semibold text-[#0B3B91]">
+                    {localUser?.name || "User"}
+                  </h3>
+
+                  <p className="mt-1 text-sm text-[#7B89A4]">
+                    {localUser?.email}
+                  </p>
+
+                  <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#E6EFFF] px-3 py-1.5 text-xs font-medium text-[#355180]">
+                    <ShieldCheck size={14} />
+                    Fan Account
+                  </div>
+                </div>
+
+                <div className="my-7 h-px bg-[#DCE8FB]" />
+
+                <LogoutButton className="w-full rounded-2xl border border-[#D9E6FF] bg-[#0B3B91] px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-[#082E70] disabled:cursor-not-allowed disabled:opacity-60" />
+              </div>
+            </section>
+          )}
+        </div>
       </main>
 
+      {/* Reuse the existing navigation behavior, styled for the light theme. */}
       <BottomTabBar
         activeKey={activeView}
         onChange={(key) => setActiveView(key as "chats" | "profile")}
+        className="!border-[#D9E6FF] !bg-white/95 !shadow-[0_-10px_30px_rgba(7,13,59,0.10)]"
         items={[
           { key: "chats", label: "Chats", icon: MessageCircle },
           { key: "profile", label: "Profile", icon: UserIcon },
         ]}
       />
+
+      {/* Keep the reusable bottom nav readable against the light theme. */}
+      <style jsx global>{`
+        nav[aria-label="Primary navigation"] button[aria-current="page"] svg {
+          color: #0b3b91 !important;
+        }
+
+        nav[aria-label="Primary navigation"] button[aria-current="page"] span {
+          color: #0b3b91 !important;
+        }
+
+        nav[aria-label="Primary navigation"]
+          button:not([aria-current="page"])
+          svg {
+          color: rgba(11, 59, 145, 0.42) !important;
+        }
+
+        nav[aria-label="Primary navigation"]
+          button:not([aria-current="page"])
+          span {
+          color: rgba(11, 59, 145, 0.42) !important;
+        }
+      `}</style>
     </div>
   );
 }
