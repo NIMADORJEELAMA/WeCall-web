@@ -876,7 +876,7 @@ export default function RealTimeChatPage() {
               </div>
 
               <div className="ml-2 min-w-0 flex-1 overflow-hidden sm:ml-3">
-                <h2 className="min-w-0 truncate text-[15px] font-bold text-[#070D3B] sm:text-base">
+                <h2 className="min-w-0 truncate text-[15px] font-bold text-[#17305F] sm:text-base">
                   {creator.name}
                 </h2>
                 <div className="flex items-center gap-2">
@@ -912,7 +912,7 @@ export default function RealTimeChatPage() {
             <main
               ref={scrollRef}
               onScroll={handleScroll}
-              className="relative min-h-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-[#F7FAFF] px-2.5 py-4 sm:px-6 sm:py-6 lg:px-10"
+              className="relative min-h-0 w-full max-w-full min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-[#F7FAFF] px-2.5 py-4 sm:px-6 sm:py-6 lg:px-10"
               style={{
                 scrollBehavior: "smooth",
                 WebkitOverflowScrolling: "touch",
@@ -1011,37 +1011,23 @@ export default function RealTimeChatPage() {
                       return (
                         <div
                           key={msg.id || idx}
-                          className={`flex w-full ${
+                          className={`flex w-full min-w-0 ${
                             isMe ? "justify-end" : "justify-start"
                           }`}
                         >
                           <div
-                            className={`flex max-w-[88%] flex-col ${
+                            className={`flex min-w-0 w-full max-w-full flex-col ${
                               isMe ? "items-end" : "items-start"
-                            } sm:max-w-[72%]`}
+                            }`}
                           >
                             <div
-                              className={`rounded-[20px] px-4 py-3 text-[14px] leading-relaxed shadow-sm ${
+                              className={`min-w-0  max-w-[80%] rounded-[20px] px-4 py-3 text-[14px] leading-relaxed shadow-sm ${
                                 isMe
                                   ? "rounded-br-md bg-[#0B3B91] text-white shadow-[0_4px_14px_rgba(11,59,145,0.10)]"
                                   : "rounded-bl-md border border-[#D9E6FF] bg-white text-[#17305F] shadow-[0_4px_14px_rgba(11,59,145,0.05)]"
                               }`}
                             >
-                              {msg.replyToMessage && (
-                                <div
-                                  className={`mb-2 rounded-xl border-l-4 px-3 py-2 text-xs ${
-                                    isMe
-                                      ? "border-[#BFD6FF] bg-[#0B3B91]/60 text-[#F3F7FF]"
-                                      : "border-[#0B3B91] bg-[#EEF4FF] text-[#7B89A4]"
-                                  }`}
-                                >
-                                  <p className="line-clamp-2">
-                                    {msg.replyToMessage.content}
-                                  </p>
-                                </div>
-                              )}
-
-                              <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                              <p className="min-w-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] [word-break:break-word]">
                                 {msg.content}
                               </p>
 
@@ -1049,9 +1035,11 @@ export default function RealTimeChatPage() {
                                 {isMe && msg.status === "PENDING_PAYMENT" && (
                                   <Lock size={10} className="text-[#E7F0FF]" />
                                 )}
+
                                 {isMe && msg.status === "AWAITING_REPLY" && (
                                   <Lock size={10} className="text-[#E7F0FF]" />
                                 )}
+
                                 {isMe && msg.status === "REPLIED" && (
                                   <span className="text-[10px] font-bold text-[#E7F0FF]">
                                     ✓✓
@@ -1101,32 +1089,32 @@ export default function RealTimeChatPage() {
                 ) : (
                   <form
                     onSubmit={handleSend}
-                    className="flex w-full min-w-0 items-end gap-1.5 rounded-[18px] border border-[#D9E6FF] bg-[#F3F7FF] p-1.5 shadow-[0_4px_18px_rgba(11,59,145,0.08)] sm:gap-2"
+                    className="flex w-full min-w-0 items-end gap-2 rounded-[22px] border border-[#D9E6FF] bg-white p-1.5 shadow-[0_6px_24px_rgba(11,59,145,0.10)] transition-all focus-within:border-[#BFD6FF] focus-within:shadow-[0_8px_28px_rgba(11,59,145,0.14)]"
                   >
+                    {/* Attachment */}
                     <button
                       type="button"
                       aria-label="Attach media"
-                      className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-[#8693AA] transition hover:bg-white hover:text-[#0B3B91] sm:flex"
+                      className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-[#8693AA] transition hover:bg-[#EEF4FF] hover:text-[#0B3B91] sm:flex"
                     >
-                      <Paperclip size={19} />
+                      <Paperclip size={19} strokeWidth={2} />
                     </button>
 
-                    <div className="flex min-w-0 flex-1 items-end overflow-hidden rounded-xl bg-white px-1 shadow-sm ring-1 ring-[#EEF4FF]">
+                    {/* Input */}
+                    <div className="flex min-w-0 flex-1 items-end rounded-[17px] bg-[#F7FAFF]">
                       <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="Write your message..."
                         aria-label="Message"
-                        className="min-h-[42px] max-h-32 min-w-0 w-full flex-1 resize-none overflow-y-auto bg-transparent px-3 py-2.5 text-base text-[#17305F] outline-none placeholder:text-[#8693AA]"
+                        className="min-h-[44px] max-h-32 min-w-0 w-full flex-1 resize-none overflow-y-auto bg-transparent px-4 py-2.5 text-base leading-6 text-[#17305F] outline-none placeholder:text-[#9AA6BA]"
                         style={{ fontSize: "16px" }}
                         rows={1}
                         onInput={(e) => {
                           const target = e.target as HTMLTextAreaElement;
+
                           target.style.height = "auto";
-                          target.style.height = `${Math.min(
-                            target.scrollHeight,
-                            128,
-                          )}px`;
+                          target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
@@ -1137,22 +1125,29 @@ export default function RealTimeChatPage() {
                       />
                     </div>
 
+                    {/* Send */}
                     <button
                       type="submit"
                       disabled={
                         !content.trim() || sendMessageMutation.isPending
                       }
                       aria-label="Send message"
-                      className="flex h-10 min-w-10 flex-shrink-0 items-center justify-center gap-1 rounded-xl bg-[#0B3B91] px-2.5 text-white shadow-sm transition hover:bg-[#08306F] active:scale-95 disabled:bg-[#BFD6FF] sm:min-w-[74px] sm:gap-1.5 sm:px-3"
+                      className={`flex h-11 flex-shrink-0 items-center justify-center rounded-full bg-[#0B3B91] text-white shadow-[0_5px_14px_rgba(11,59,145,0.20)] transition-all active:scale-95 ${
+                        content.trim()
+                          ? "w-auto min-w-[44px] gap-1.5 px-3.5 hover:bg-[#08306F]"
+                          : "w-11 px-0"
+                      } disabled:cursor-not-allowed disabled:bg-[#DCE8FB] disabled:text-[#8EA3C4] disabled:shadow-none`}
                     >
                       {sendMessageMutation.isPending ? (
                         <Loader2 size={18} className="animate-spin" />
                       ) : (
                         <>
-                          <span className="hidden text-xs font-bold sm:inline">
-                            ${replyPrice}
-                          </span>
-                          <Send size={17} />
+                          {content.trim() && (
+                            <span className="text-xs font-bold whitespace-nowrap">
+                              ${replyPrice}
+                            </span>
+                          )}
+                          <Send size={17} strokeWidth={2.2} />
                         </>
                       )}
                     </button>

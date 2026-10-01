@@ -216,7 +216,7 @@ export default function UserDashboard() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search chats..."
-                      className="h-12 w-full rounded-2xl border border-[#D9E6FF] bg-[#F8FBFF] pl-11 pr-4 text-sm text-[#17305F] outline-none placeholder:text-[#9AA6BA] focus:border-[#AFC7F5] focus:bg-white"
+                      className="h-12 w-full rounded-2xl border border-[#D9E6FF] bg-[#F8FBFF] pl-11 pr-4 text-[16px] text-[#17305F] outline-none placeholder:text-[#9AA6BA] focus:border-[#AFC7F5] focus:bg-white"
                     />
                   </div>
                 )}
