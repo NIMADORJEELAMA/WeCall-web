@@ -122,7 +122,7 @@ export default function UserDashboard() {
   const showHome = activeView === "chats";
 
   return (
-    <div className="fixed inset-0 h-[100dvh] w-full overflow-hidden bg-white font-sans text-[#070D3B]">
+    <div className="fixed inset-0 h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-white font-sans text-[#070D3B]">
       <main className="h-full min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain px-5 pb-28 pt-[calc(1rem+env(safe-area-inset-top))] sm:px-6 md:px-8">
         <div className="mx-auto w-full max-w-2xl">
           {/* ===================================================== */}
