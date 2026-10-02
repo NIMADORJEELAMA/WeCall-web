@@ -15,7 +15,7 @@ import {
   UserRound,
 } from "lucide-react";
 
-import BottomTabBar from "../../components/CreatorDashboard/BottomTabBar";
+import BottomTabBar from "../../../components/CreatorDashboard/BottomTabBar";
 
 interface ProfileScreenProps {
   name?: string;
@@ -41,15 +41,15 @@ export default function ProfileScreen({
     .toUpperCase();
 
   return (
-    <main className="flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-[#f7f9fc]">
+    <div className="mx-auto flex h-[100dvh] min-h-0 w-full max-w-4xl flex-col overflow-hidden bg-[#f7f9fc] md:shadow-[0_0_50px_rgba(35,57,84,0.08)]">
       {/* Header */}
-      <header className="relative shrink-0 overflow-hidden bg-gradient-to-b from-[#cfe3ff] via-[#e6f0ff] to-[#f7f9fc] px-5 pb-4 pt-[calc(1rem+env(safe-area-inset-top))]">
-        <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-white/40 blur-3xl" />
-        <div className="pointer-events-none absolute -left-20 top-20 h-36 w-36 rounded-full bg-white/25 blur-2xl" />
+      <header className="relative shrink-0 overflow-hidden bg-gradient-to-b from-[#cfe3ff] via-[#e6f0ff] to-[#f7f9fc] px-5  pt-[calc(0.5em+env(safe-area-inset-top))]">
+        <div className="pointer-events-none absolute -right-16 -top-10 h-48 w-48 rounded-full bg-white/40 blur-3xl" />
+        <div className="pointer-events-none absolute -left-20 top-10 h-36 w-36 rounded-full bg-white/25 blur-2xl" />
 
         <div className="relative flex items-center justify-between">
           <div>
-            <h1 className="mt-0.5 text-[30px] font-bold tracking-[-0.045em] text-[#172238]">
+            <h1 className="mt-0.5 text-[26px] font-bold tracking-[-0.045em] text-[#172238]">
               Profile
             </h1>
           </div>
@@ -57,9 +57,9 @@ export default function ProfileScreen({
           <Link
             href="/settings"
             aria-label="Settings"
-            className="grid h-11 w-11 place-items-center rounded-full border border-white/70 bg-white/55 text-[#33445f] shadow-[0_6px_18px_rgba(56,88,130,0.08)] backdrop-blur-sm transition hover:bg-white active:scale-95"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/70 bg-white/55 text-[#33445f] shadow-[0_6px_18px_rgba(56,88,130,0.08)] backdrop-blur-sm transition hover:bg-white active:scale-95"
           >
-            <Settings size={21} strokeWidth={1.8} />
+            <Settings size={18} strokeWidth={1.8} />
           </Link>
         </div>
       </header>
@@ -79,7 +79,7 @@ export default function ProfileScreen({
       >
         {/* Profile card */}
         <section className="relative rounded-[28px] border border-white bg-white px-5 pb-6 pt-0 shadow-[0_8px_30px_rgba(35,57,84,0.06)]">
-          <div className="-mt-1 flex justify-center">
+          <div className="  flex justify-center">
             <div className="relative">
               {avatarUrl ? (
                 <img
@@ -95,7 +95,7 @@ export default function ProfileScreen({
             </div>
           </div>
 
-          <div className="mt-4 text-center">
+          <div className="mt-1 text-center">
             <h2 className="text-[22px] font-bold tracking-[-0.025em] text-[#172238]">
               {name}
             </h2>
@@ -166,7 +166,7 @@ export default function ProfileScreen({
               <LogOut size={19} strokeWidth={1.9} />
             </span>
 
-            <span className="flex-1 text-[14px] font-medium text-[#ef4444]">
+            <span className="flex-1 text-[14px] font-semibold text-[#ef4444]">
               Logout
             </span>
 
@@ -176,7 +176,7 @@ export default function ProfileScreen({
       </div>
 
       <BottomTabBar />
-    </main>
+    </div>
   );
 }
 
@@ -198,7 +198,7 @@ function ProfileRow({
         {icon}
       </span>
 
-      <span className="flex-1 text-[14px] font-medium text-[#263447]">
+      <span className="flex-1 text-[14px] font-semibold text-[#282d35]">
         {label}
       </span>
 

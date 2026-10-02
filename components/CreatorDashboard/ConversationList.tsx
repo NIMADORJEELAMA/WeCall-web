@@ -114,7 +114,7 @@ export function ConversationList({
   ).length;
 
   return (
-    <aside
+    <div
       className={`h-full min-h-0 w-full min-w-0 flex-col overflow-hidden bg-white ${
         selectedConversationId ? "hidden" : "flex"
       }`}
@@ -372,6 +372,6 @@ export function ConversationList({
         )}
       </div>
       <BottomTabBar />
-    </aside>
+    </div>
   );
 }

@@ -22,7 +22,7 @@ const tabs = [
   },
   {
     label: "Profile",
-    href: "/profile",
+    href: "/dashboard/profile",
     icon: UserRound,
   },
   {
@@ -56,7 +56,7 @@ export default function BottomTabBar() {
         bg-white/95
         px-4
         pt-2
-        pb-[calc(.45rem+env(safe-area-inset-bottom))]
+        pb-[calc(env(safe-area-inset-bottom))]
         backdrop-blur-xl
       "
     >
