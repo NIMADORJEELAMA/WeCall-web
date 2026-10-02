@@ -1,41 +1,75 @@
 "use client";
+
 import { useMemo, useState } from "react";
 import {
+  Bell,
+  Bot,
+  CheckCheck,
+  Forward,
+  Link2,
   MessageCircle,
+  Pencil,
   Search,
-  ChevronRight,
+  Share,
+  Share2,
+  Upload,
+  Users,
   X,
-  SlidersHorizontal,
 } from "lucide-react";
 
 import type { ConversationThread } from "@/types/conversation";
+import BottomTabBar from "./BottomTabBar";
+
 interface ConversationListProps {
   conversations: ConversationThread[];
   selectedConversationId: string | null;
   onSelectConversation: (conversationId: string) => void;
   isLoading: boolean;
 }
+
 function formatTime(dateString: string) {
   const date = new Date(dateString);
   const now = new Date();
+
   const sameDay =
     date.getDate() === now.getDate() &&
     date.getMonth() === now.getMonth() &&
     date.getFullYear() === now.getFullYear();
+
   if (sameDay) {
-    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
   }
-  return date.toLocaleDateString([], { day: "2-digit", month: "short" });
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+
+  const isYesterday =
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear();
+
+  if (isYesterday) return "Yesterday";
+
+  return date.toLocaleDateString([], {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
+
 function getInitials(name: string) {
   return name
     .trim()
-    .split(" ")
+    .split(/\s+/)
     .slice(0, 2)
     .map((word) => word[0])
     .join("")
     .toUpperCase();
 }
+
 export function ConversationList({
   conversations,
   selectedConversationId,
@@ -43,217 +77,301 @@ export function ConversationList({
   isLoading,
 }: ConversationListProps) {
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "unread" | "groups">(
+    "all",
+  );
+  const [showSearch, setShowSearch] = useState(false);
+
   const filteredConversations = useMemo(() => {
     const value = search.trim().toLowerCase();
-    if (!value) return conversations;
-    return conversations.filter((thread) => {
+
+    let result = conversations;
+
+    if (activeTab === "unread") {
+      result = result.filter((conversation) => conversation.hasPending);
+    }
+
+    // The current ConversationThread model does not expose a group flag,
+    // so Groups remains a visual tab without changing existing conversation data.
+    if (activeTab === "groups") {
+      result = [];
+    }
+
+    if (!value) return result;
+
+    return result.filter((thread) => {
       const latest = thread.messages[thread.messages.length - 1]?.content || "";
+
       return (
         thread.senderName.toLowerCase().includes(value) ||
         latest.toLowerCase().includes(value)
       );
     });
-  }, [conversations, search]);
+  }, [conversations, search, activeTab]);
+
   const pendingCount = conversations.filter(
     (conversation) => conversation.hasPending,
   ).length;
+
   return (
     <aside
-      className={`h-full min-h-0 w-full min-w-0 flex flex-col bg-white ${
+      className={`h-full min-h-0 w-full min-w-0 flex-col overflow-hidden bg-white ${
         selectedConversationId ? "hidden" : "flex"
       }`}
     >
-      {" "}
-      {/* Header */}{" "}
-      <div className="shrink-0 border-b border-[#EEF4FF] px-5 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] md:px-6">
-        {" "}
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-[#0B3B91] text-white shadow-[0_8px_24px_rgba(11,59,145,0.16)]">
-                <MessageCircle size={19} strokeWidth={2.2} />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7B89A4]">
-                  Wecall
-                </p>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-[24px] font-bold tracking-[-0.03em] text-[#070D3B]">
-                    Chats
-                  </h1>
-                  {conversations.length > 0 && (
-                    <span className="rounded-full bg-[#EEF4FF] px-2 py-0.5 text-[11px] font-semibold text-[#0B3B91]">
-                      {conversations.length}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            {pendingCount > 0 && (
-              <p className="mt-0.5 text-xs font-medium text-[#0B3B91]">
-                {pendingCount} message{pendingCount !== 1 ? "s" : ""} waiting
-                for reply
-              </p>
-            )}
-          </div>
+      {/* Soft blue top area */}
+      <header className="relative shrink-0 overflow-hidden bg-gradient-to-b from-[#cfe3ff] via-[#e8f1ff] to-[#f7f9fc] px-5 pb-5 pt-[calc(0.9rem+env(safe-area-inset-top))]">
+        <div className="pointer-events-none absolute -right-12 -top-20 h-48 w-48 rounded-full bg-white/35 blur-2xl" />
+        <div className="pointer-events-none absolute -left-20 top-10 h-32 w-32 rounded-full bg-white/25 blur-2xl" />
+
+        <div className="relative flex items-center justify-between">
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-[#60708E] transition hover:bg-[#EEF4FF] hover:text-[#0B3B91]"
+            aria-label="Share profile"
+            className="flex h-11 items-center gap-2 rounded-full border border-white/70 bg-white/45 px-4 text-[#263447] shadow-[0_6px_18px_rgba(56,88,130,0.08)] backdrop-blur-sm transition hover:bg-white/75 active:scale-95"
           >
-            {" "}
-            <SlidersHorizontal size={19} />{" "}
-          </button>{" "}
-        </div>{" "}
-        {/* Search */}{" "}
-        <div className="relative mt-4">
-          {" "}
-          <Search
-            size={18}
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8693AA]"
-          />{" "}
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search chats"
-            className="h-12 w-full rounded-2xl border border-[#D9E6FF] bg-[#F7FAFF] pl-10 pr-10 text-base text-[#17305F] outline-none transition placeholder:text-[#8693AA] focus:border-[#9DBEF5] focus:bg-white focus:ring-4 focus:ring-[#0B3B91]/10"
-            style={{ fontSize: "16px" }}
-          />{" "}
-          {search && (
+            <span className="whitespace-nowrap text-[13px] font-semibold">
+              Share Profile
+            </span>
+
+            <Upload size={20} strokeWidth={1.8} />
+          </button>
+
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
-              onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-[#8693AA] hover:bg-[#EEF4FF]"
+              aria-label="Notifications"
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/70 bg-white/45 text-[#263447] shadow-[0_6px_18px_rgba(56,88,130,0.08)] backdrop-blur-sm transition hover:bg-white/75 active:scale-95"
             >
-              {" "}
-              <X size={15} />{" "}
+              <Bell size={20} strokeWidth={1.8} />
+
+              {pendingCount > 0 && (
+                <span className="absolute mr-[-30px] mt-[-27px] h-2.5 w-2.5 rounded-full border-2 border-[#d8e8ff] bg-[#3aa86b]" />
+              )}
             </button>
-          )}{" "}
-        </div>{" "}
-      </div>{" "}
-      {/* Conversations */}{" "}
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pb-4 scrollbar-thin">
-        {" "}
+          </div>
+        </div>
+
+        <div className="relative mt-5">
+          <div className="flex items-end justify-between">
+            <div>
+              {/* <p className="text-[12px] font-medium text-[#71809a]">
+                {pendingCount > 0
+                  ? `${pendingCount} waiting for your reply`
+                  : "Stay connected"}
+              </p> */}
+              <h1 className="mt-0.5 text-[30px] font-bold tracking-[-0.045em] text-[#172238]">
+                Messages
+              </h1>
+            </div>
+
+            <button
+              type="button"
+              aria-label="Search messages"
+              onClick={() => setShowSearch((value) => !value)}
+              className="grid h-10 w-10 place-items-center rounded-full text-[#51627d] transition hover:bg-white/60 active:scale-95"
+            >
+              <Search size={21} strokeWidth={1.9} />
+            </button>
+          </div>
+
+          {showSearch && (
+            <div className="relative mt-4">
+              <Search
+                size={17}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7f8da4]"
+              />
+              <input
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search messages"
+                className="h-11 w-full rounded-2xl border border-white/80 bg-white/80 pl-10 pr-10 text-[15px] text-[#172238] outline-none backdrop-blur-sm transition placeholder:text-[#8995a9] focus:bg-white focus:ring-4 focus:ring-white/40"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label="Clear search"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-[#7f8da4] hover:bg-[#edf2f8]"
+                >
+                  <X size={15} />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Reference-style filter pills */}
+        <div className="relative mt-5 flex gap-2">
+          {[
+            { id: "all" as const, label: "All", count: conversations.length },
+            { id: "unread" as const, label: "Unread", count: pendingCount },
+            // { id: "groups" as const, label: "Groups", count: 0 },
+          ].map((tab) => {
+            const active = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`h-10 rounded-full px-5 text-[13px] font-semibold transition active:scale-[0.98] ${
+                  active
+                    ? "bg-[#17191d] text-white shadow-[0_5px_14px_rgba(0,0,0,0.12)]"
+                    : "bg-white/70 text-[#69768a] hover:bg-white"
+                }`}
+              >
+                {tab.label}
+                {tab.id === "unread" && tab.count > 0 && (
+                  <span className="ml-1.5 opacity-70">({tab.count})</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </header>
+
+      {/* Conversation list */}
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain bg-white pb-4 scrollbar-thin">
         {isLoading ? (
-          <div className="space-y-1 px-2">
-            {" "}
-            {[1, 2, 3, 4, 5].map((item) => (
+          <div className="divide-y divide-[#edf0f3]">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
               <div
                 key={item}
-                className="flex animate-pulse items-center gap-3 rounded-2xl px-3 py-3"
+                className="flex animate-pulse items-center gap-3.5 px-5 py-3.5"
               >
-                {" "}
-                <div className="h-14 w-14 shrink-0 rounded-full bg-[#DCE8FB]" />{" "}
-                <div className="flex-1 space-y-2">
-                  {" "}
-                  <div className="h-3.5 w-32 rounded bg-[#DCE8FB]" />{" "}
-                  <div className="h-3 w-48 rounded bg-[#EEF4FF]" />{" "}
-                </div>{" "}
+                <div className="h-14 w-14 shrink-0 rounded-full bg-[#e9edf2]" />
+                <div className="min-w-0 flex-1 space-y-2.5">
+                  <div className="h-3.5 w-32 rounded-full bg-[#e9edf2]" />
+                  <div className="h-3 w-48 max-w-[75%] rounded-full bg-[#f0f2f5]" />
+                </div>
               </div>
-            ))}{" "}
+            ))}
           </div>
         ) : filteredConversations.length === 0 ? (
-          <div className="flex min-h-[50vh] flex-col items-center justify-center px-8 text-center">
-            {" "}
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#EEF4FF]">
-              {" "}
-              <MessageCircle
-                size={28}
-                strokeWidth={1.7}
-                className="text-[#8693AA]"
-              />{" "}
-            </div>{" "}
-            <h3 className="font-semibold text-[#17305F]">
-              {" "}
-              {search ? "No chats found" : "No conversations yet"}{" "}
-            </h3>{" "}
-            <p className="mt-1 max-w-[260px] text-xs leading-5 text-[#8693AA]">
-              {" "}
+          <div className="flex min-h-[48vh] flex-col items-center justify-center px-8 text-center">
+            <div className="mb-4 grid h-16 w-16 place-items-center rounded-full bg-[#f1f4f7] text-[#7b8798]">
+              {activeTab === "groups" ? (
+                <Users size={27} strokeWidth={1.7} />
+              ) : (
+                <MessageCircle size={28} strokeWidth={1.7} />
+              )}
+            </div>
+            <h3 className="font-semibold text-[#263447]">
+              {search
+                ? "No chats found"
+                : activeTab === "groups"
+                  ? "No groups yet"
+                  : activeTab === "unread"
+                    ? "All caught up"
+                    : "No conversations yet"}
+            </h3>
+            <p className="mt-1 max-w-[270px] text-xs leading-5 text-[#8a95a5]">
               {search
                 ? "Try searching for a different name or message."
-                : "When someone sends you a paid message, it will appear here."}{" "}
-            </p>{" "}
+                : activeTab === "groups"
+                  ? "Group conversations will appear here."
+                  : activeTab === "unread"
+                    ? "You have no messages waiting for a reply."
+                    : "When someone sends you a paid message, it will appear here."}
+            </p>
           </div>
         ) : (
-          <div className="px-2">
-            {" "}
-            {filteredConversations.map((thread) => {
+          <div>
+            {filteredConversations.map((thread, index) => {
               const latestMsg = thread.messages[thread.messages.length - 1];
               const isSelected =
                 selectedConversationId === thread.conversationId;
+
               return (
                 <button
                   key={thread.conversationId}
                   type="button"
                   onClick={() => onSelectConversation(thread.conversationId)}
-                  className={` group relative flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-all active:scale-[0.99] ${isSelected ? "bg-[#EEF4FF]" : "hover:bg-slate-50 active:bg-[#EEF4FF]"} `}
+                  className={`group relative flex w-full items-center gap-3.5 border-b border-[#edf0f3] px-5 py-3.5 text-left transition-colors active:bg-[#f4f6f8] ${
+                    isSelected ? "bg-[#f5f8fc]" : "hover:bg-[#fafbfc]"
+                  }`}
                 >
-                  {" "}
-                  {/* Avatar */}{" "}
+                  {/* Avatar */}
                   <div className="relative shrink-0">
-                    {" "}
                     {thread.avatarUrl ? (
                       <img
                         src={thread.avatarUrl}
                         alt={thread.senderName}
-                        className="h-14 w-14 rounded-full object-cover"
+                        className="h-[58px] w-[58px] rounded-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#DCEAFF] text-sm font-bold text-[#0B3B91] shadow-sm ring-2 ring-[#EEF4FF]">
-                        {" "}
-                        {getInitials(thread.senderName)}{" "}
+                      <div className="grid h-[58px] w-[58px] place-items-center rounded-full bg-gradient-to-br from-[#d8e7f8] to-[#aebfd3] text-sm font-bold text-[#40566e]">
+                        {getInitials(thread.senderName)}
                       </div>
-                    )}{" "}
+                    )}
+
+                    {/* Online / pending indicator */}
                     {thread.hasPending && (
-                      <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#0B3B91]">
-                        {" "}
-                        <span className="h-1.5 w-1.5 rounded-full bg-white" />{" "}
+                      <span className="absolute bottom-0 right-0 grid h-[18px] w-[18px] place-items-center rounded-full border-[2px] border-white bg-[#2fa66a]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
                       </span>
-                    )}{" "}
-                  </div>{" "}
-                  {/* Content */}{" "}
-                  <div className="min-w-0 flex-1">
-                    {" "}
-                    <div className="flex items-center justify-between gap-2">
-                      {" "}
+                    )}
+                  </div>
+
+                  {/* Message preview */}
+                  <div className="min-w-0 flex-1 py-0.5">
+                    <div className="flex items-center justify-between gap-3">
                       <h3
-                        className={` truncate text-[15px] ${thread.hasPending ? "font-bold text-[#070D3B]" : "font-semibold text-[#17305F]"} `}
+                        className={`min-w-0 truncate text-[15px] tracking-[-0.01em] ${
+                          thread.hasPending
+                            ? "font-bold text-[#1d2735]"
+                            : "font-semibold text-[#273342]"
+                        }`}
                       >
-                        {" "}
-                        {thread.senderName}{" "}
-                      </h3>{" "}
+                        {thread.senderName}
+                      </h3>
+
                       <span
-                        className={` shrink-0 text-[11px] ${thread.hasPending ? "font-semibold text-[#0B3B91]" : "text-[#8693AA]"} `}
+                        className={`shrink-0 text-[11px] ${
+                          thread.hasPending
+                            ? "font-medium text-[#68758a]"
+                            : "text-[#9aa3af]"
+                        }`}
                       >
-                        {" "}
-                        {formatTime(thread.latestTimestamp)}{" "}
-                      </span>{" "}
-                    </div>{" "}
-                    <div className="mt-1 flex items-center gap-2">
-                      {" "}
+                        {formatTime(thread.latestTimestamp)}
+                      </span>
+                    </div>
+
+                    <div className="mt-1 flex items-center gap-1.5">
+                      {latestMsg && !thread.hasPending && (
+                        <CheckCheck
+                          size={15}
+                          strokeWidth={2}
+                          className="shrink-0 text-[#42afd1]"
+                        />
+                      )}
+
                       <p
-                        className={` min-w-0 flex-1 truncate text-[13px] ${thread.hasPending ? "font-medium text-[#52627F]" : "text-[#7B89A4]"} `}
+                        className={`min-w-0 flex-1 truncate text-[13px] leading-5 ${
+                          thread.hasPending
+                            ? "font-medium text-[#596779]"
+                            : "text-[#8a95a3]"
+                        }`}
                       >
-                        {" "}
-                        {latestMsg?.content || "No messages"}{" "}
-                      </p>{" "}
+                        {latestMsg?.content || "No messages"}
+                      </p>
+
                       {thread.totalBounty > 0 && (
-                        <span className="shrink-0 rounded-full bg-[#EEF4FF] px-2 py-0.5 text-[10px] font-bold text-[#0B3B91]">
-                          {" "}
-                          ${thread.totalBounty}{" "}
+                        <span className="shrink-0 rounded-full bg-[#edf5ff] px-2 py-0.5 text-[10px] font-bold text-[#4673a8]">
+                          ${thread.totalBounty}
                         </span>
-                      )}{" "}
-                    </div>{" "}
-                  </div>{" "}
-                  <ChevronRight
-                    size={17}
-                    className={` shrink-0 transition md:opacity-0 md:group-hover:opacity-100 ${isSelected ? "text-[#0B3B91]" : "text-[#B1BCD0]"} `}
-                  />{" "}
+                      )}
+                    </div>
+                  </div>
                 </button>
               );
-            })}{" "}
+            })}
           </div>
-        )}{" "}
-      </div>{" "}
+        )}
+      </div>
+      <BottomTabBar />
     </aside>
   );
 }

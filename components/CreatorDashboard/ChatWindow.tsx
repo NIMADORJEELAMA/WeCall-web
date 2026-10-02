@@ -8,6 +8,7 @@ import type {
 import {
   ArrowLeft,
   CheckCheck,
+  ChevronLeft,
   Clock3,
   DollarSign,
   MessageCircle,
@@ -324,7 +325,7 @@ export function ChatWindow({
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#60708E] transition hover:bg-[#EEF4FF] active:scale-95"
               aria-label="Back"
             >
-              <ArrowLeft size={21} />
+              <ChevronLeft size={21} />
             </button>
 
             <div className="relative shrink-0">
@@ -335,7 +336,7 @@ export function ChatWindow({
                   className="h-10 w-10 rounded-full object-cover ring-2 ring-[#BFD6FF]"
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-xs font-bold text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 bg-[#0B3B91] text-xs font-bold text-white">
                   {getInitials(activeThread.senderName)}
                 </div>
               )}
@@ -359,8 +360,6 @@ export function ChatWindow({
 
             {activeThread.totalBounty > 0 && (
               <div className="hidden items-center gap-1 rounded-full bg-[#EEF4FF] px-2.5 py-1 sm:flex">
-                <DollarSign size={12} className="text-[#0B3B91]" />
-
                 <span className="text-[11px] font-bold text-[#0B3B91]">
                   ${activeThread.totalBounty}
                 </span>
@@ -458,14 +457,14 @@ export function ChatWindow({
                           <button
                             type="button"
                             onClick={() => handleSelectMessage(msg)}
-                            className={`group relative w-full text-left transition-all ${
+                            className={`group relative  text-left transition-all ${
                               isSelected
                                 ? "rounded-2xl ring-2 ring-blue-500 ring-offset-white"
                                 : ""
                             }`}
                           >
                             <div
-                              className={`min-w-0 max-w-full rounded-[20px] rounded-bl-md border px-4 py-3 shadow-[0_4px_14px_rgba(11,59,145,0.05)] transition ${
+                              className={`min-w-30 max-w-full rounded-[12px] border px-3 py-2 shadow-[0_3px_12px_rgba(11,59,145,0.05)] transition ${
                                 isSelected
                                   ? "border-[#7FAAF5] bg-[#EEF4FF]"
                                   : "border-[#D9E6FF] bg-white hover:border-[#BFD6FF] hover:bg-[#F7FAFF]"
@@ -474,6 +473,39 @@ export function ChatWindow({
                               <p className="min-w-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] [word-break:break-word] text-[14px] leading-[1.5] text-[#17305F]">
                                 {msg.content}
                               </p>
+
+                              {/* Bottom metadata */}
+                              <div className="mt-1 flex items-center justify-between">
+                                {/* Time - left */}
+                                <span className="text-[10px] text-[#8693AA]">
+                                  {formatMessageTime(msg.createdAt)}
+                                </span>
+
+                                {/* Status + price - right */}
+                                <div className="flex items-center gap-1.5">
+                                  {msg.status === "AWAITING_REPLY" && (
+                                    <span className="flex items-center gap-1 text-[10px] font-semibold text-[#0B3B91]">
+                                      ${msg.payment?.amount}
+                                      <Clock3 size={12} strokeWidth={2} />
+                                    </span>
+                                  )}
+
+                                  {msg.status === "PENDING_PAYMENT" && (
+                                    <span className="flex items-center gap-1 text-[10px] font-semibold text-[#B47B00]">
+                                      ${msg.payment?.amount}
+                                      <Clock3 size={12} strokeWidth={2} />
+                                    </span>
+                                  )}
+
+                                  {msg.status === "REPLIED" && (
+                                    <CheckCheck
+                                      size={14}
+                                      strokeWidth={2.5}
+                                      className="text-[#0B3B91]"
+                                    />
+                                  )}
+                                </div>
+                              </div>
                             </div>
 
                             {/* Reply hint */}
@@ -493,7 +525,7 @@ export function ChatWindow({
                                 MESSAGE METADATA
                             ================================================== */}
 
-                          <div className="mt-1.5 flex items-center justify-end gap-1.5">
+                          {/* <div className="mt-1.5 flex items-center justify-end gap-1.5">
                             <span className="text-[10px] text-[#8693AA]">
                               {formatMessageTime(msg.createdAt)}
                             </span>
@@ -516,18 +548,18 @@ export function ChatWindow({
                                 Replied
                               </span>
                             )}
-                          </div>
+                          </div> */}
 
                           {/* ==================================================
                                 WAITING FOR REPLY
                             ================================================== */}
 
-                          {msg.status === "AWAITING_REPLY" && (
+                          {/* {msg.status === "AWAITING_REPLY" && (
                             <div className="mt-1.5 ml-1 flex items-center gap-1 text-[10px] font-medium text-[#0B3B91]">
                               <Clock3 size={11} />
                               Paid · waiting for your reply
                             </div>
-                          )}
+                          )} */}
 
                           {/* ==================================================
                                 SELECTED
@@ -548,22 +580,26 @@ export function ChatWindow({
 
                       {msg.status === "REPLIED" && msg.replyContent && (
                         <div className="mt-3 flex justify-end">
-                          <div className="w-full max-w-[80%] min-w-0 sm:max-w-[80%]">
-                            <div className="min-w-0 max-w-full rounded-[20px] rounded-tr-md bg-[#0B3B91] px-4 py-3 shadow-[0_4px_14px_rgba(11,59,145,0.10)]">
+                          <div className="  max-w-[80%] min-w-0 sm:max-w-[80%]">
+                            <div className="min-w-30 max-w-full rounded-[14px] bg-[#0B3B91] px-3 py-2 shadow-[0_4px_14px_rgba(11,59,145,0.10)]">
                               <p className="min-w-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] [word-break:break-word] text-[14px] leading-[1.5] text-white">
                                 {msg.replyContent}
                               </p>
-                            </div>
 
-                            <div className="mt-1.5 flex items-center justify-end gap-1">
-                              <span className="text-[10px] text-[#8693AA]">
-                                {formatMessageTime(msg.createdAt)}
-                              </span>
+                              {/* Bottom metadata */}
+                              <div className="mt-1 flex items-center justify-between">
+                                {/* Time - left */}
+                                <span className="text-[10px] text-[#D7E5FF]">
+                                  {formatMessageTime(msg.createdAt)}
+                                </span>
 
-                              <CheckCheck
-                                size={14}
-                                className="text-[#0B3B91]"
-                              />
+                                {/* Replied tick - right */}
+                                <CheckCheck
+                                  size={14}
+                                  strokeWidth={2.5}
+                                  className="text-[#D7E5FF]"
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>

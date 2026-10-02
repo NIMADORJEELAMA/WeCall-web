@@ -42,7 +42,7 @@ interface Conversation {
 }
 
 const FAQS = [
-  "How does Popcall work?",
+  "How does Wecall work?",
   "How are messages charged?",
   "How does the price change if I send long messages?",
   "What if a creator sends me back-to-back replies?",

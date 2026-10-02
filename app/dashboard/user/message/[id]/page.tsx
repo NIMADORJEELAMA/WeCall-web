@@ -395,6 +395,12 @@ export default function RealTimeChatPage() {
     },
     [conversationId, queryClient],
   );
+  const formatMessageTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
 
   // ============================================================
   // LOAD OLDER MESSAGES
@@ -1021,17 +1027,25 @@ export default function RealTimeChatPage() {
                             }`}
                           >
                             <div
-                              className={`min-w-0  max-w-[80%] rounded-[20px] px-4 py-3 text-[14px] leading-relaxed shadow-sm ${
+                              className={`min-w-0 max-w-[80%] rounded-[12px] px-3 py-2 text-[14px] leading-relaxed shadow-sm ${
                                 isMe
-                                  ? "rounded-br-md bg-[#0B3B91] text-white shadow-[0_4px_14px_rgba(11,59,145,0.10)]"
-                                  : "rounded-bl-md border border-[#D9E6FF] bg-white text-[#17305F] shadow-[0_4px_14px_rgba(11,59,145,0.05)]"
+                                  ? "bg-[#0B3B91] text-white shadow-[0_4px_14px_rgba(11,59,145,0.10)]"
+                                  : "border border-[#D9E6FF] bg-white text-[#17305F] shadow-[0_4px_14px_rgba(11,59,145,0.05)]"
                               }`}
                             >
                               <p className="min-w-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] [word-break:break-word]">
                                 {msg.content}
                               </p>
 
-                              <div className="mt-1 flex items-center justify-end gap-1.5">
+                              <div className="  flex items-center justify-end gap-1.5">
+                                <span
+                                  className={`text-[10px] ${
+                                    isMe ? "text-[#D7E5FF]" : "text-[#7D91B5]"
+                                  }`}
+                                >
+                                  {formatMessageTime(msg.createdAt)}
+                                </span>
+
                                 {isMe && msg.status === "PENDING_PAYMENT" && (
                                   <Lock size={10} className="text-[#E7F0FF]" />
                                 )}
