@@ -3,15 +3,9 @@
 import { useMemo, useState } from "react";
 import {
   Bell,
-  Bot,
   CheckCheck,
-  Forward,
-  Link2,
   MessageCircle,
-  Pencil,
   Search,
-  Share,
-  Share2,
   Upload,
   Users,
   X,
@@ -19,7 +13,8 @@ import {
 
 import type { ConversationThread } from "@/types/conversation";
 import BottomTabBar from "./BottomTabBar";
-
+import axiosInstance from "@/lib/axios";
+import { useQuery } from "@tanstack/react-query";
 interface ConversationListProps {
   conversations: ConversationThread[];
   selectedConversationId: string | null;
@@ -82,6 +77,14 @@ export function ConversationList({
   );
   const [showSearch, setShowSearch] = useState(false);
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const response = await axiosInstance.get("/users/profile");
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
   const filteredConversations = useMemo(() => {
     const value = search.trim().toLowerCase();
 
@@ -113,6 +116,39 @@ export function ConversationList({
     (conversation) => conversation.hasPending,
   ).length;
 
+  const handleShareProfile = async () => {
+    const username = profile?.creatorProfile?.username;
+
+    if (!username) {
+      return;
+    }
+
+    const profileUrl = `${window.location.origin}/wecall/${username}`;
+
+    const shareData = {
+      title: `${profile.name} on wecall`,
+      text: `Message ${profile.name} on wecall`,
+      url: profileUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+
+      await navigator.clipboard.writeText(profileUrl);
+
+      alert("Profile link copied!");
+    } catch (error) {
+      // User cancelling the native share dialog is not an error.
+      if ((error as DOMException)?.name === "AbortError") {
+        return;
+      }
+
+      console.error("Failed to share profile:", error);
+    }
+  };
   return (
     <div
       className={`h-full min-h-0 w-full min-w-0 flex-col overflow-hidden bg-white ${
@@ -128,7 +164,9 @@ export function ConversationList({
           <button
             type="button"
             aria-label="Share profile"
-            className="flex h-11 items-center gap-2 rounded-full border border-white/70 bg-white/45 px-4 text-[#263447] shadow-[0_6px_18px_rgba(56,88,130,0.08)] backdrop-blur-sm transition hover:bg-white/75 active:scale-95"
+            onClick={handleShareProfile}
+            disabled={!profile?.creatorProfile?.username}
+            className="flex h-11 items-center gap-2 rounded-full border border-white/70 bg-white/45 px-4 text-[#263447] shadow-[0_6px_18px_rgba(56,88,130,0.08)] backdrop-blur-sm transition hover:bg-white/75 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="whitespace-nowrap text-[13px] font-semibold">
               Share Profile
