@@ -40,7 +40,7 @@ import Providers from "./providers";
 import { Toaster } from "react-hot-toast";
 import Script from "next/script";
 import { SocketProvider } from "@/components/providers/SocketProvider";
-
+import type { Viewport } from "next";
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
@@ -52,6 +52,12 @@ export const metadata: Metadata = {
   description: "Advanced Reply & Earn",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#cfe3ff",
+};
 export default function RootLayout({
   children,
 }: {

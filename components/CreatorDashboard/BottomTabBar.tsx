@@ -53,11 +53,10 @@ export default function BottomTabBar() {
         z-50
         border-t
         border-[#edf0f3]
-        bg-white/95
-        px-4
-        pt-2
-        pb-[calc(env(safe-area-inset-bottom))]
-        backdrop-blur-xl
+        bg-white
+        px-3
+        pt-1.5
+        pb-[max(6px,env(safe-area-inset-bottom))]
       "
     >
       <div className="mx-auto grid max-w-md grid-cols-4">
@@ -68,18 +67,18 @@ export default function BottomTabBar() {
             <Link
               key={href}
               href={href}
-              className="flex min-w-0 flex-col items-center justify-center gap-1 py-1.5"
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 py-1"
             >
               <span
-                className={`flex h-8 min-w-[58px] items-center justify-center rounded-full px-3 transition-all ${
+                className={`flex h-8 min-w-[54px] items-center justify-center rounded-full px-3 transition-all ${
                   active ? "bg-[#e9f2ff] text-[#1769e0]" : "text-[#718096]"
                 }`}
               >
-                <Icon size={22} strokeWidth={active ? 2.4 : 1.8} />
+                <Icon size={21} strokeWidth={active ? 2.4 : 1.8} />
               </span>
 
               <span
-                className={`text-[11px] leading-none ${
+                className={`text-[10px] leading-4 ${
                   active
                     ? "font-semibold text-[#1769e0]"
                     : "font-medium text-[#7b8797]"
