@@ -18,7 +18,7 @@ export default function DashboardLayout({
   return (
     <ProtectedRoute>
       <div
-        className="fixed inset-0 h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-white"
+        className="fixed inset-0 h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-gradient-to-b from-[#cfe3ff] via-[#e8f1ff] to-[#f7f9fc]"
         style={{
           height: "100dvh",
           minHeight: "100svh",
@@ -46,7 +46,7 @@ export default function DashboardLayout({
             height: 100%;
             margin: 0;
             padding: 0;
-            background: #ffffff;
+            background: #cfe3ff;
             overflow: hidden;
           }
 
@@ -59,15 +59,17 @@ export default function DashboardLayout({
             width: 100%;
             min-height: 100%;
             height: 100%;
-            background: #ffffff;
+            background: #cfe3ff;
           }
         `}</style>
 
-        <div className="flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-white">
-          <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
+        <div className="flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-transparent">
+          <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
             <main
-              className="flex min-h-0 flex-1 overflow-hidden p-0"
-              style={{ overscrollBehavior: "none" }}
+              className="flex min-h-0 flex-1 overflow-hidden bg-white p-0"
+              style={{
+                overscrollBehavior: "none",
+              }}
             >
               {children}
             </main>

@@ -28,6 +28,8 @@ interface ProfileData {
     id: string;
     username: string;
     replyPrice: string | number;
+    bio: string | null;
+    category: string | null;
   } | null;
 }
 
@@ -41,7 +43,8 @@ export default function EditProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [username, setUsername] = useState("");
   const [replyPrice, setReplyPrice] = useState("");
-
+  const [bio, setBio] = useState("");
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -77,6 +80,8 @@ export default function EditProfilePage() {
               ? String(data.creatorProfile.replyPrice)
               : "",
           );
+          setBio(data.creatorProfile.bio || "");
+          setCategory(data.creatorProfile.category || "");
         }
       } catch (err: any) {
         console.error("Failed to load profile:", err);
@@ -142,6 +147,8 @@ export default function EditProfilePage() {
         payload.creatorProfile = {
           username: username.trim(),
           replyPrice: Number(replyPrice),
+          bio: bio.trim(),
+          category: category.trim(),
         };
       }
 
@@ -359,6 +366,21 @@ export default function EditProfilePage() {
                 min="0"
                 step="0.01"
               />
+              <InputField
+                icon={<UserRound size={18} />}
+                label="Category"
+                value={category}
+                onChange={setCategory}
+                placeholder="e.g. Music, Fitness, Business"
+              />
+
+              <TextAreaField
+                label="Bio"
+                value={bio}
+                onChange={setBio}
+                placeholder="Tell people a little about yourself..."
+                maxLength={300}
+              />
             </div>
           </section>
         )}
@@ -406,6 +428,47 @@ export default function EditProfilePage() {
           Cancel
         </button>
       </main>
+    </div>
+  );
+}
+
+function TextAreaField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  maxLength,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  maxLength?: number;
+}) {
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between">
+        <label className="text-[12px] font-semibold text-[#64748b]">
+          {label}
+        </label>
+
+        {maxLength && (
+          <span className="text-[10px] text-[#aab4c2]">
+            {value.length}/{maxLength}
+          </span>
+        )}
+      </div>
+
+      <div className="rounded-[16px] border border-[#e8edf3] bg-[#f9fbfd] px-3.5 py-3 transition focus-within:border-[#8bbce8] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#1877c9]/5">
+        <textarea
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          rows={4}
+          className="w-full resize-none bg-transparent text-[14px] font-medium leading-6 text-[#263447] outline-none placeholder:text-[#aab4c2]"
+        />
+      </div>
     </div>
   );
 }

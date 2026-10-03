@@ -5,8 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   BadgeCheck,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
   MessageCircle,
   ShieldCheck,
+  Sparkles,
+  WalletCards,
 } from "lucide-react";
 import api from "@/lib/axios";
 
@@ -15,6 +20,7 @@ interface Creator {
   name: string;
   username: string;
   bio: string | null;
+  aboutMe?: string | null;
   category: string | null;
   replyPrice: string | number;
   currency: string;
@@ -60,19 +66,23 @@ export default function WecallCreatorPage() {
   const handleMessage = () => {
     if (!creator) return;
 
-    // We will implement authentication + conversation
-    // creation in the next step.
-    console.log("Message creator:", creator.id);
-
     router.push(`/dashboard/user/message/${creator.id}`);
   };
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-9 w-9 rounded-full border-2 border-slate-300 border-t-slate-900 animate-spin" />
-          <p className="text-sm text-slate-500">Loading creator...</p>
+      <main className="min-h-[100dvh] bg-gradient-to-b from-[#cfe3ff] via-[#e8f1ff] to-[#f7f9fc] px-4 py-8">
+        <div className="mx-auto flex min-h-[80vh] w-full max-w-xl items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative h-11 w-11">
+              <div className="absolute inset-0 rounded-full border-[3px] border-white/80" />
+              <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-transparent border-t-[#3978d8]" />
+            </div>
+
+            <p className="text-sm font-medium text-[#71809a]">
+              Loading profile...
+            </p>
+          </div>
         </div>
       </main>
     );
@@ -80,24 +90,24 @@ export default function WecallCreatorPage() {
 
   if (error || !creator) {
     return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center px-5">
-        <div className="w-full max-w-md text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-            <MessageCircle size={30} className="text-slate-400" />
+      <main className="flex min-h-[100dvh] items-center justify-center bg-gradient-to-b from-[#cfe3ff] via-[#e8f1ff] to-[#f7f9fc] px-5">
+        <div className="w-full max-w-md rounded-[28px] border border-white/80 bg-white/90 p-8 text-center shadow-[0_20px_60px_rgba(58,93,140,0.12)] backdrop-blur">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#edf4ff]">
+            <MessageCircle size={28} className="text-[#5687c9]" />
           </div>
 
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-xl font-bold tracking-tight text-[#172238]">
             Creator not found
           </h1>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm leading-6 text-[#7c899d]">
             This creator link may be invalid or the creator may currently be
             unavailable.
           </p>
 
           <button
             onClick={() => router.push("/")}
-            className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition"
+            className="mt-6 rounded-2xl bg-[#172238] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#26354d] active:scale-[0.98]"
           >
             Go Home
           </button>
@@ -107,126 +117,266 @@ export default function WecallCreatorPage() {
   }
 
   const price = Number(creator.replyPrice).toFixed(2);
-
   const image = creator.profileImage || creator.avatarUrl || null;
 
+  const aboutMe = creator.aboutMe || creator.bio;
+
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 md:py-14">
-      <div className="mx-auto w-full max-w-lg">
-        {/* Back */}
-        <button
-          onClick={() => router.back()}
-          className="mb-5 flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition"
-        >
-          <ArrowLeft size={17} />
-          Back
-        </button>
+    <main className="min-h-[100dvh] bg-gradient-to-b from-[#cfe3ff] via-[#e8f1ff] to-[#f7f9fc] px-4 pb-10 pt-5 sm:px-6 sm:pt-8">
+      <div className="mx-auto w-full max-w-xl">
+        {/* Top navigation */}
+        <div className="mb-5 flex items-center justify-between">
+          <button
+            onClick={() => router.back()}
+            className="flex h-10 items-center gap-1.5 rounded-full bg-white/60 px-3.5 text-sm font-medium text-[#5c6d85] shadow-sm backdrop-blur transition hover:bg-white active:scale-95"
+          >
+            <ArrowLeft size={17} />
+            Back
+          </button>
 
-        {/* Card */}
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          {/* Profile Header */}
-          <div className="px-6 pt-8 text-center">
-            {/* Avatar */}
-            <div className="relative mx-auto h-24 w-24">
-              {image ? (
-                <img
-                  src={image}
-                  alt={creator.name}
-                  className="h-24 w-24 rounded-full object-cover ring-4 ring-slate-50"
-                />
-              ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-slate-900 text-3xl font-bold text-white ring-4 ring-slate-50">
-                  {creator.name?.charAt(0).toUpperCase()}
+          <div className="flex items-center gap-1.5 text-[12px] font-semibold tracking-wide text-[#71809a]">
+            <Sparkles size={14} />
+            WECALL
+          </div>
+        </div>
+
+        {/* Main profile + about card */}
+        <section className="overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_18px_50px_rgba(54,91,139,0.10)]">
+          <div className="relative px-6 pb-6 pt-7 text-center sm:px-8">
+            {/* Soft decorative background */}
+            <div className="pointer-events-none absolute -right-20 -top-24 h-48 w-48 rounded-full bg-[#dcecff] blur-3xl" />
+            <div className="pointer-events-none absolute -left-20 top-20 h-32 w-32 rounded-full bg-[#eef6ff] blur-3xl" />
+
+            <div className="relative">
+              {/* Avatar */}
+              <div className="relative mx-auto h-24 w-24">
+                {image ? (
+                  <img
+                    src={image}
+                    alt={creator.name}
+                    className="h-24 w-24 rounded-full object-cover ring-6 ring-[#f2f7fd] shadow-[0_8px_24px_rgba(58,88,126,0.14)]"
+                  />
+                ) : (
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#d8e9ff] to-[#9dbce5] text-3xl font-bold text-[#31537d] ring-6 ring-[#f2f7fd]">
+                    {creator.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+
+                <div className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md">
+                  <BadgeCheck
+                    size={20}
+                    className="text-[#3978d8]"
+                    fill="currentColor"
+                    stroke="white"
+                  />
                 </div>
-              )}
+              </div>
 
-              <div className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm">
+              {/* Name */}
+              <div className="mt-4 flex items-center justify-center gap-1.5">
+                <h1 className="text-[23px] font-bold tracking-[-0.035em] text-[#172238]">
+                  {creator.name}
+                </h1>
+
                 <BadgeCheck
-                  size={21}
-                  className="text-slate-900"
+                  size={17}
+                  className="text-[#3978d8]"
                   fill="currentColor"
                   stroke="white"
                 />
               </div>
+
+              {/* Username */}
+              {/* <p className="mt-0.5 text-[13px] font-medium text-[#8491a4]">
+                @{creator.username}
+              </p> */}
+
+              {/* Category */}
+              {creator.category && (
+                <div className="mt-3 inline-flex rounded-full bg-[#f0f6ff] px-3 py-1 text-[10px] font-semibold text-[#5277a5]">
+                  {creator.category}
+                </div>
+              )}
+
+              {creator.bio && (
+                <p className="mx-auto mt-4 max-w-[390px] font-serif text-[15px] italic leading-6 text-[#58687d]">
+                  {creator.bio}
+                </p>
+              )}
             </div>
+          </div>
 
-            {/* Name */}
-            <div className="mt-4 flex items-center justify-center gap-1.5">
-              <h1 className="text-xl font-bold text-slate-900">
-                {creator.name}
-              </h1>
+          {/* Compact reply information */}
+          <div className="mx-5 border-t border-[#edf1f5] px-1 py-4 sm:mx-7">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#99a4b3]">
+                  Personal reply
+                </p>
 
-              <BadgeCheck size={17} className="text-slate-700" />
-            </div>
-
-            {/* Username */}
-            <p className="mt-1 text-sm text-slate-500">@{creator.username}</p>
-
-            {/* Category */}
-            {creator.category && (
-              <div className="mt-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                {creator.category}
+                <p className="mt-0.5 text-[12px] text-[#7b899b]">
+                  Get a direct response from {creator.name}
+                </p>
               </div>
-            )}
 
-            {/* Bio */}
-            {creator.bio && (
-              <p className="mx-auto mt-5 max-w-sm text-sm leading-6 text-slate-600">
-                {creator.bio}
-              </p>
-            )}
-          </div>
+              <div className="shrink-0 text-right">
+                <span className="text-[19px] font-bold tracking-[-0.02em] text-[#172238]">
+                  ${price}
+                </span>
 
-          {/* Divider */}
-          <div className="mx-6 my-7 border-t border-slate-100" />
-
-          {/* Pricing */}
-          <div className="px-6 text-center">
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-              Personal reply
-            </p>
-
-            <div className="mt-1">
-              <span className="text-3xl font-bold text-slate-900">
-                ${price}
-              </span>
-
-              <span className="ml-1 text-sm text-slate-500">/ reply</span>
+                <span className="ml-1 text-[11px] text-[#8995a6]">/ reply</span>
+              </div>
             </div>
-
-            <p className="mt-2 text-xs text-slate-500">
-              Send a question and get a personal response.
-            </p>
           </div>
 
-          {/* Message Button */}
-          <div className="px-6 pb-7 pt-6">
+          {/* Message button */}
+          <div className="px-5 pb-6 pt-2 sm:px-7">
             <button
               onClick={handleMessage}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.99]"
+              className="group flex w-full items-center justify-center gap-2 rounded-[17px] bg-[#3978d8] px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_8px_20px_rgba(57,120,216,0.20)] transition hover:bg-[#2f6dc9] active:scale-[0.985]"
             >
-              <MessageCircle size={19} />
+              <MessageCircle size={18} />
               Message {creator.name}
+              <ChevronRight
+                size={16}
+                className="transition-transform group-hover:translate-x-0.5"
+              />
             </button>
 
-            {/* Trust */}
-            <div className="mt-4 flex items-center justify-center gap-5 text-[11px] text-slate-400">
+            <div className="mt-3 flex items-center justify-center gap-3 text-[10px] font-medium text-[#919cab]">
               <span className="flex items-center gap-1">
-                <ShieldCheck size={14} />
+                <ShieldCheck size={13} className="text-[#6a9bd6]" />
                 Secure
               </span>
 
-              <span>•</span>
+              <span className="h-1 w-1 rounded-full bg-[#ccd2da]" />
 
-              <span>Personal reply</span>
+              <span className="flex items-center gap-1">
+                <CheckCircle2 size={13} className="text-[#6a9bd6]" />
+                Personal reply
+              </span>
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* How Wecall works */}
+        <section className="mt-4 rounded-[28px] border border-white/80 bg-white/90 p-6 shadow-[0_15px_45px_rgba(54,91,139,0.09)] backdrop-blur sm:p-7">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#6f8fb9]">
+              Simple & personal
+            </p>
+
+            <h2 className="mt-1 text-[21px] font-bold tracking-[-0.03em] text-[#172238]">
+              How Wecall works
+            </h2>
+
+            <p className="mt-1.5 text-[13px] leading-5 text-[#7c899c]">
+              Connect directly with creators you want to hear from.
+            </p>
+          </div>
+
+          <div className="mt-6 space-y-5">
+            {/* Step 1 */}
+            <div className="flex gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eaf3ff] text-[#3978d8]">
+                <MessageCircle size={18} />
+              </div>
+
+              <div className="pt-0.5">
+                <h3 className="text-[14px] font-bold text-[#263447]">
+                  1. Send a message
+                </h3>
+
+                <p className="mt-1 text-[12px] leading-5 text-[#7d8a9d]">
+                  Ask your question or send a message to {creator.name}.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eaf3ff] text-[#3978d8]">
+                <WalletCards size={18} />
+              </div>
+
+              <div className="pt-0.5">
+                <h3 className="text-[14px] font-bold text-[#263447]">
+                  2. Pay for the reply
+                </h3>
+
+                <p className="mt-1 text-[12px] leading-5 text-[#7d8a9d]">
+                  Your payment is connected to the reply you are requesting.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eaf3ff] text-[#3978d8]">
+                <Clock3 size={18} />
+              </div>
+
+              <div className="pt-0.5">
+                <h3 className="text-[14px] font-bold text-[#263447]">
+                  3. Get a personal response
+                </h3>
+
+                <p className="mt-1 text-[12px] leading-5 text-[#7d8a9d]">
+                  Once {creator.name} replies, you can continue the
+                  conversation.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Small reassurance */}
+          <div className="mt-6 flex items-start gap-2.5 rounded-2xl bg-[#f5f9ff] px-4 py-3.5">
+            <ShieldCheck size={17} className="mt-0.5 shrink-0 text-[#5790d6]" />
+
+            <p className="text-[11px] leading-5 text-[#71819a]">
+              Wecall keeps the experience simple, direct and focused on
+              meaningful conversations.
+            </p>
+          </div>
+        </section>
 
         {/* Footer */}
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Powered by Wecall
-        </p>
+        <footer className="px-3 pb-4 pt-8 text-center">
+          <p className="text-[11px] font-medium text-[#7f8da1]">
+            © 2026 Wecall · All rights reserved.
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] font-semibold">
+            <a
+              href="mailto:support@popcall.com"
+              className="text-[#5f7695] transition hover:text-[#3978d8]"
+            >
+              Contact Us
+            </a>
+
+            <span className="text-[#c2cad5]">•</span>
+
+            <a
+              href="https://popcall.com/legal/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#5f7695] transition hover:text-[#3978d8]"
+            >
+              Privacy Policy
+            </a>
+
+            <span className="text-[#c2cad5]">•</span>
+
+            <a
+              href="https://popcall.com/legal/terms-of-service"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#5f7695] transition hover:text-[#3978d8]"
+            >
+              Terms of Service
+            </a>
+          </div>
+        </footer>
       </div>
     </main>
   );
