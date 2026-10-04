@@ -96,7 +96,14 @@ export default function LoginPage() {
           <div className="h-1 w-4 bg-slate-800 rounded-full" />
         </div>
       </div>
-
+      <button
+        type="button"
+        onClick={() => {
+          window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+        }}
+      >
+        Continue with Google
+      </button>
       {/* RIGHT SIDE: LOGIN FORM */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50/30">
         <div className="w-full max-w-md space-y-8">
