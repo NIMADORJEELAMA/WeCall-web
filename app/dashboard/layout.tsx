@@ -2,6 +2,7 @@
 
 "use client";
 
+import BottomTabBar from "@/components/CreatorDashboard/BottomTabBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 
@@ -80,6 +81,7 @@ export default function DashboardLayout({
             >
               {children}
             </main>
+            <BottomTabBar />
           </div>
         </div>
       </div>

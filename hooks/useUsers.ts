@@ -1,6 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 
+export const useCurrentUser = () => {
+  return useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
+      const { data } = await api.get("/users/me");
+      return data;
+    },
+  });
+};
+
 export const useUsers = () => {
   return useQuery({
     queryKey: ["users"],

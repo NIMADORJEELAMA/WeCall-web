@@ -25,11 +25,11 @@ export default function LoginPage() {
         password,
       });
 
-      const { user } = response.data;
+      const { user, access_token } = response.data;
 
       // Save credentials
-      // localStorage.setItem("token", access_token);
-      // localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", access_token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       // localStorage.setItem("access_token", response.data.access_token);
 
